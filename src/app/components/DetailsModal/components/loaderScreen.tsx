@@ -1,8 +1,8 @@
 import React from "react";
 
 // Icons
-import { SpinnerIcon } from "@/app/Icons/SpinnerIcon"; // Placeholder icon component, replace with actual spinner icon
-import { CheckIcon } from "@/app/Icons/CheckIcon"; // Placeholder icon component, replace with actual check icon
+// import { SpinnerIcon } from "@/app/Icons/SpinnerIcon"; // Placeholder icon component, replace with actual spinner icon
+// import { CheckIcon } from "@/app/Icons/CheckIcon"; // Placeholder icon component, replace with actual check icon
 
 interface ProcessLoadingProps {
   stepStatus: {
@@ -25,7 +25,7 @@ const ProcessLoading: React.FC<ProcessLoadingProps> = ({ stepStatus }) => {
       <ul className="list-none p-0">
         {steps.map((step, index) => (
           <li key={index} className="flex items-center mb-4">
-            <div className="flex items-center">
+            {/* <div className="flex items-center">
               {step.status ? (
                 <CheckIcon className="text-green-500 w-5 h-5 mr-2" />
               ) : (
@@ -34,7 +34,7 @@ const ProcessLoading: React.FC<ProcessLoadingProps> = ({ stepStatus }) => {
               <span className={step.status ? "text-gray-800" : "text-gray-500"}>
                 {step.label}
               </span>
-            </div>
+            </div> */}
           </li>
         ))}
       </ul>
