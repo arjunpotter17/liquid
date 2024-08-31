@@ -1,0 +1,38 @@
+/* Styles for the wave effect */
+.water {
+  position: absolute;
+  bottom: 0; /* Keep the bottom edge constant */
+  width: 200%; /* Extend width to cover the viewport horizontally */
+  height: 30%; /* Reduced height for the water body to make waves more visible */
+  background-color: #2d3748; /* Blue color for the water */
+  animation: wave-animation 8s linear infinite; /* Continuous wave animation */
+}
+
+/* Keyframes for the wave animation */
+@keyframes wave-animation {
+  0% {
+    transform: translateX(0);
+    border-top-left-radius: 50% 40%;
+    border-top-right-radius: 50% 40%;
+  }
+  25% {
+    border-top-left-radius: 40% 35%;
+    border-top-right-radius: 60% 30%;
+    transform: translateX(-25%);
+  }
+  50% {
+    transform: translateX(-50%);
+    border-top-left-radius: 50% 40%;
+    border-top-right-radius: 50% 40%;
+  }
+  75% {
+    border-top-left-radius: 60% 45%;
+    border-top-right-radius: 40% 35%;
+    transform: translateX(-75%);
+  }
+  100% {
+    transform: translateX(0); /* Looping back to start */
+    border-top-left-radius: 50% 40%;
+    border-top-right-radius: 50% 40%;
+  }
+}

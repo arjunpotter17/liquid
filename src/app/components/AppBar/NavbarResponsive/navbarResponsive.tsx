@@ -27,11 +27,9 @@ const SidebarResponsive = ({ isOpen, setIsOpen }: any): JSX.Element => {
 
   useEffect(() => {
     if (path === "/") {
-      setActive("Dashboard");
-    } else if (path === "/about") {
-      setActive("About");
-    } else if (path === "/create") {
-      setActive("Create");
+      setActive("Home");
+    } else if (path === "/trade") {
+      setActive("Trade");
     }
   }, [path]);
 
@@ -50,13 +48,12 @@ const SidebarResponsive = ({ isOpen, setIsOpen }: any): JSX.Element => {
           }
         >
           <Link href="/" onClick={handleToggle}>
-            <p className="text-toekn-orange text-toekn-banner-header-mobile font-toekn-regular z-10 cursor-pointer">
-              Toekn.
+            <p className="text-liquid-dark-blue text-liquid-banner-header-mobile font-liquid-regular z-10 cursor-pointer">
+              Liquid
             </p>
           </Link>
 
           <div className="flex items-center gap-x-4">
-            {mounted && <WalletMultiButtonDynamic />}
             <button onClick={handleToggle}>
               <MenuIcon />
             </button>
@@ -64,14 +61,14 @@ const SidebarResponsive = ({ isOpen, setIsOpen }: any): JSX.Element => {
         </div>
       </header>
       <div
-        className={`top-0 right-0 fixed z-50 bg-toekn-black font-toekn-regular w-full max-w-[450px] h-full py-10 px-[24px] overflow-scroll ${
+        className={`top-0 right-0 fixed z-50 bg-liquid-black font-liquid-regular w-full max-w-[450px] h-full py-10 px-[24px] overflow-scroll ${
           isOpen ? "translate-x-0" : "translate-x-full"
         } ease-in-out duration-300`}
       >
         <div className="w-full px-2 flex items-center justify-between">
           <Link href="/" onClick={handleToggle}>
-            <p className="text-toekn-orange text-toekn-title font-toekn-regular z-10 cursor-pointer">
-              Toekn.
+            <p className="text-liquid-dark-blue text-liquid-title font-liquid-bold z-10 cursor-pointer">
+              Liquid.
             </p>
           </Link>
 
@@ -84,37 +81,21 @@ const SidebarResponsive = ({ isOpen, setIsOpen }: any): JSX.Element => {
           <li
             onClick={handleToggle}
             className={`cursor-pointer ${
-              active === "Dashboard" ? "text-toekn-orange" : "text-toekn-white"
+              active === "Home" ? "text-liquid-dark-blue" : "text-liquid-white"
             }`}
           >
-            <Link href="/">Dashboard</Link>
+            <Link href="/">Home</Link>
           </li>
           <li
             onClick={handleToggle}
             className={`cursor-pointer ${
-              active === "Create" ? "text-toekn-orange" : "text-toekn-white"
+              active === "Trade" ? "text-liquid-dark-blue" : "text-liquid-white"
             }`}
           >
-            <Link href="/create">Create Escrow</Link>
+            <Link href="/trade">Trade</Link>
           </li>
-          <li
-            onClick={handleToggle}
-            className={`cursor-pointer ${
-              active === "About" ? "text-toekn-orange" : "text-toekn-white"
-            }`}
-          >
-            <Link href="/about">About</Link>
-          </li>
-          <li
-            onClick={() =>
-              window.open(
-                "https://github.com/arjunpotter17/talent-escrow-frontend-task",
-                "_blank"
-              )
-            }
-            className="text-toekn-white cursor-pointer"
-          >
-            Github
+          <li>
+          {mounted && <WalletMultiButtonDynamic />}
           </li>
         </ul>
       </div>

@@ -8,13 +8,48 @@ const config: Config = {
   ],
   theme: {
     extend: {
-      backgroundImage: {
-        "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
-        "gradient-conic":
-          "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
+      colors: {
+        "liquid-dark-blue": "#60a5fa",
+        "liquid-white": "#F7F7F7",
+        "liquid-dark-white": "#F2F2F2",
+        "liquid-blue": "#7bc6e3",
+        "liquid-black": "#111314",
+        "liquid-popup-bg": "#2d3748",
+        "liquid-gray": "#495158",
+        "liquid-card-gray-bg":"#181c1e"
+      },
+      fontFamily: {
+        "liquid-bold": ["NeueMachina Bold", "sans-serif"],
+        "liquid-regular": ["NeueMachina Regular", "sans-serif"],
+        "liquid-light": ["NeueMachina Light", "sans-serif"],
+        "liquid-semibold": ["NeueMachina Seminbold", "sans-serif"],
+      },
+      fontSize: {
+        "liquid-banner-header": "3.25rem",
+        "liquid-banner-header-mobile": "2rem",
+        "liquid-title": "1.5rem",
+        "liquid-title-mobile": "1rem",
+        "liquid-subtitle": "1rem",
+        "liquid-subtitle-mobile": "0.75rem",
+        "liquid-text": "0.75rem",
+        "liquid-text-mobile": "0.5rem",
+      },
+      screens: {
+        "liquid-sm": "321px",
+        "liquid-md": "688px",
+        "liquid-lg": "980px",
+        "liquid-xl": "1248px",
+      },
+      boxShadow:{
+        cardHover: "0 0 5px 2px rgba(96, 165, 250, 0.6);",
+      },
+      scale: {
+        '98': '0.98',
       },
     },
   },
-  plugins: [],
+  plugins: [
+    require('tailwind-scrollbar'),
+  ],
 };
 export default config;

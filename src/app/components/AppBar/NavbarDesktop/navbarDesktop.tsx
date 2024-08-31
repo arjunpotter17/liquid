@@ -23,18 +23,16 @@ const NavbarDesktop = (): JSX.Element => {
   // Prefetch routes to improve page switching speed
   useEffect(() => {
     router.prefetch("/");
-    router.prefetch("/about");
-    router.prefetch("/create");
+    router.prefetch("/trade");
   }, [router]);
 
   // Set the active navigation item based on the current path
   useEffect(() => {
     const routeMap: Record<string, string> = {
-      "/": "Dashboard",
-      "/about": "About",
-      "/create": "Create",
+      "/": "Home",
+      "/trade": "Trade",
     };
-    setActive(routeMap[path] || "Dashboard");
+    setActive(routeMap[path] || "Home");
   }, [path]);
 
   // Ensure the WalletMultiButton is only rendered on the client-side
@@ -45,52 +43,31 @@ const NavbarDesktop = (): JSX.Element => {
   return (
     <div className="!z-50 w-full justify-between flex items-center absolute py-4 px-10">
       <Link href="/" passHref>
-        <p className="text-toekn-orange text-toekn-banner-header-mobile font-toekn-regular z-10 cursor-pointer">
-          Toekn.
+        <p className="text-liquid-blue text-liquid-banner-header-mobile font-liquid-bold z-10 cursor-pointer">
+          Liquid.
         </p>
       </Link>
-      <div className="flex items-center justify-center gap-x-10 text-toekn-white font-toekn-regular">
+      <div className="flex items-center justify-center gap-x-10 text-liquid-white font-liquid-semibold">
         <Link href="/" passHref>
           <p
-            className={`cursor-pointer hover:text-toekn-orange ${
-              active === "Dashboard"
-                ? "text-toekn-orange"
-                : "text-toekn-white"
+            className={`cursor-pointer hover:text-liquid-dark-blue ${
+              active === "Home"
+                ? "text-liquid-dark-blue"
+                : "text-liquid-white"
             }`}
           >
-            Dashboard
+            Home
           </p>
         </Link>
-        <Link href="/about" passHref>
+        <Link href="/trade" passHref>
           <p
-            className={`cursor-pointer hover:text-toekn-orange ${
-              active === "About" ? "text-toekn-orange" : "text-toekn-white"
+            className={`cursor-pointer hover:text-liquid-dark-blue ${
+              active === "Trade" ? "text-liquid-dark-blue" : "text-liquid-white"
             }`}
           >
-            About
+            Trade
           </p>
         </Link>
-        <Link href="/create" passHref>
-          <p
-            className={`cursor-pointer hover:text-toekn-orange ${
-              active === "Create" ? "text-toekn-orange" : "text-toekn-white"
-            }`}
-          >
-            Create Escrow
-          </p>
-        </Link>
-        <p
-          onClick={() =>
-            window.open(
-              "https://github.com/arjunpotter17/talent-escrow-frontend-task",
-              "_blank"
-            )
-          }
-          className="cursor-pointer hover:text-toekn-orange"
-        >
-          Github
-        </p>
-
         {mounted && <WalletMultiButtonDynamic />}
       </div>
     </div>

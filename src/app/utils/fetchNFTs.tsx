@@ -14,6 +14,7 @@ const fetchNFTs = async (ownerPublicKey: PublicKey) => {
       umi,
       ownerPublicKey
     );
+    console.log(assetsByOwner);
     const nfts = assetsByOwner.filter(
       (token) => token?.metadata?.uri.length > 1
     );

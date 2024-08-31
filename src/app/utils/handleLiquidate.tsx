@@ -1,110 +1,125 @@
 import { WalletContextState } from "@solana/wallet-adapter-react";
-import bs58 from "bs58";
-import { Transaction, VersionedTransaction } from "@solana/web3.js";
+import {
+  Transaction,
+  VersionedTransaction,
+  TransactionConfirmationStrategy,
+} from "@solana/web3.js";
 import { liquidate } from "./liquidate";
-import { swapFunds } from "./swapFunds";
-import { getConnection } from "./helpers";
-import { tipjito } from "./tipjito";
+import { getConnection, sleep, swapTransaction } from "./helpers";
+import { toast } from "sonner";
 
 export const handleLiquidate = async (
   mint: string,
   wallet: WalletContextState,
-  tokenAddress: string
+  swapData: any,
+  noSwap?: boolean
 ) => {
   if (!wallet.signAllTransactions || !wallet.publicKey) {
     console.error("Wallet does not support signing transactions");
+    toast("Wallet does not support signing transactions");
     return;
   }
 
   try {
     const connection = getConnection();
-    // Step 1: Fetch liquidation transaction from Tensor and swap quote from Jupiter
-    const data = await liquidate(mint);
-    const swapData = await swapFunds(
-      data?.highestPricePool?.currentSellPrice,
-      tokenAddress
-    );
 
-    // Step 2: Fetch swap instructions from Jupiter
-    const swapResponse = await fetch("/api/swap-inst-tx", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+    // Step 1: Fetch liquidation transaction from Tensor and swap transaction from Jupiter
 
-      body: JSON.stringify({
-        swapData,
-        key: wallet.publicKey.toBase58(),
-      }),
-    });
+    const data = await liquidate(mint); //tensor transaction
 
-    const swapTransaction = await swapResponse.json();
-    if (swapTransaction.error) {
-      throw new Error(
-        "Failed to get swap transaction: " + swapTransaction.error
+    const swapTransactionBuf = await swapTransaction(
+      swapData,
+      wallet.publicKey.toBase58()
+    ); //jupiter transaction for quote
+
+    const txsToSign: (VersionedTransaction | Transaction)[] =
+      data?.data.txs.map((tx: any) =>
+        tx.txV0
+          ? VersionedTransaction.deserialize(tx.txV0.data)
+          : Transaction.from(tx.tx.data)
       );
-    }
-    const swapTransactionBuf = Buffer.from(
-      swapTransaction?.swapTransaction,
-      "base64"
-    );
+
+    const blockhash = (await connection.getLatestBlockhash()).blockhash;
+
+    //add blockhash to transactions
+    txsToSign.forEach((tx) => {
+      if (tx instanceof VersionedTransaction) {
+        tx.message.recentBlockhash = blockhash;
+      } else if (tx instanceof Transaction) {
+        tx.recentBlockhash = blockhash;
+      }
+    });
     const deserializedSwap =
       VersionedTransaction.deserialize(swapTransactionBuf);
-    // get the latest block hash
-    const latestBlockHash = await connection.getLatestBlockhash();
+    deserializedSwap.message.recentBlockhash = blockhash;
 
-    // deserialize the Tensor transaction
-    const txsToSign = data?.data.txs.map((tx: any) =>
-      tx.txV0
-        ? VersionedTransaction.deserialize(tx.txV0.data)
-        : Transaction.from(tx.tx.data)
-    );
-
-    //get tip transaction
-    const tipTransaction = await tipjito(wallet.publicKey, connection);
-
-    //sign the transactions
-    const signedTransactions = await wallet.signAllTransactions([
-      txsToSign,
+    // Step 2: Sign transactions
+    const signedTxs = await wallet.signAllTransactions([
+      ...txsToSign,
       deserializedSwap,
-      tipTransaction,
     ]);
 
-    //convert the signed transactions to base58
-    const base58TensorTransaction = bs58.encode(
-      signedTransactions[0].serialize()
-    );
-    const base58SwapTransaction = bs58.encode(
-      signedTransactions[1].serialize()
-    );
-    const base58TipTransaction = bs58.encode(signedTransactions[2].serialize());
-
-    console.log(
-      "Signed transactions",
-      base58TensorTransaction,
-      "signed transaction 2",
-      base58TipTransaction,
-      "signed transaction 3",
-      base58SwapTransaction
-    );
-
-    //Send the signed transaction to the network using Jito API
-    const response = await fetch("/api/send-bundle", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        bundles: [
-          base58TensorTransaction,
-          base58SwapTransaction,
-          base58TipTransaction,
-        ],
-      }),
+    const sign = await connection.sendRawTransaction(signedTxs[0].serialize(), {
+      skipPreflight: false,
+      preflightCommitment: "processed",
     });
 
-    const responseData = await response.json();
-    console.log("Response", responseData);
+    const latestBlockhash = await connection.getLatestBlockhash();
+
+    const confirmationStrategy: TransactionConfirmationStrategy = {
+      signature: sign,
+      blockhash: latestBlockhash.blockhash,
+      lastValidBlockHeight: latestBlockhash.lastValidBlockHeight,
+    };
+
+    const confirmation = await connection.confirmTransaction(
+      confirmationStrategy,
+      "processed"
+    );
+
+    if (confirmation.value.err) {
+      console.error("Sell Transaction failed", confirmation.value.err);
+      toast("Sell Transaction failed");
+      return;
+    } else {
+      toast("Sell Transaction successful");
+      if (noSwap) return;
+      const balance = await connection.getBalance(wallet.publicKey);
+      if (balance < swapData.inAmount) {
+        sleep(10000);
+      }
+      //even tho we are awaiting the confirmation, it takes a while for the money to hit the wallet
+      const reBalance = await connection.getBalance(wallet.publicKey);
+      const sig = await connection.sendRawTransaction(
+        signedTxs[1].serialize(),
+        {
+          skipPreflight: false,
+          preflightCommitment: "processed",
+        }
+      );
+
+      const latestBlockhash = await connection.getLatestBlockhash();
+
+      const confirmationStrategy: TransactionConfirmationStrategy = {
+        signature: sig,
+        blockhash: latestBlockhash.blockhash,
+        lastValidBlockHeight: latestBlockhash.lastValidBlockHeight,
+      };
+
+      const confirmation = await connection.confirmTransaction(
+        confirmationStrategy,
+        "processed"
+      );
+
+      if (confirmation.value.err) {
+        console.error("Swap Transaction failed", confirmation.value.err);
+        toast("Swap Transaction failed. Expected Sol is in your wallet");
+        return;
+      } else {
+        console.log("Swap Transaction successful", sig);
+        toast("Swap Transaction successful");
+      }
+    }
   } catch (error) {
     console.error("Failed to liquidate", error);
   }

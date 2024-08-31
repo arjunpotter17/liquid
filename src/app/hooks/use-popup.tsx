@@ -5,6 +5,7 @@ import React, {
   useContext,
   useMemo,
 } from "react";
+import Popup from "../components/Popup/popup";
 // import Popup from "../components/Popup/popup";
 // import { setSubtitle } from "../utils/subtitle";
 
@@ -32,14 +33,14 @@ export const PopupProvider = ({
 
   return (
     <PopupContext.Provider value={contextValue}>
-      {showPopup && (<></>
-        // <Popup
-        //   title="Transaction Successful"
-        //   subTitle={setSubtitle(type)}
-        //   explorerLink={txId}
-        //   onClose={() => {setShowPopup(false); setTxId(""); setType("create")}}
+      {showPopup && (
+        <Popup
+          title="Transaction Successful"
+          subTitle={"hello"}
+          explorerLink={txId}
+          onClose={() => {setShowPopup(false); setTxId(""); setType("create")}}
           
-        // />
+        />
       )}{" "}
       {children}
     </PopupContext.Provider>

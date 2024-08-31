@@ -9,6 +9,8 @@ import {
 import { PhantomWalletAdapter } from "@solana/wallet-adapter-wallets";
 import { WalletModalProvider } from "@solana/wallet-adapter-react-ui";
 import Navbar from "../components/AppBar/appbar";
+import { PopupProvider } from "../hooks/use-popup";
+import { Toaster } from "sonner";
 // import { PopupProvider } from "../hooks/use-popup";
 // import { ToastContainer } from "react-toastify";
 // import "react-toastify/dist/ReactToastify.css";
@@ -25,7 +27,7 @@ export default function RootLayout({
     <ConnectionProvider endpoint={endpoint}>
       <WalletProvider wallets={wallets}>
         <WalletModalProvider>
-          {/* <PopupProvider> */}
+          <PopupProvider>
             {/* <ToastContainer
               position="bottom-right"
               autoClose={2500}
@@ -38,11 +40,12 @@ export default function RootLayout({
               pauseOnHover
               theme="light"
             /> */}
-            <div className="relative !overflow-y-auto scroll-smooth scrollbar-thin scrollbar-track-toekn-black scrollbar-thumb-toekn-popup-bg">
+            <Toaster />
+            <div className="relative !overflow-y-auto scroll-smooth scrollbar-thin scrollbar-track-liquid-black scrollbar-thumb-liquid-popup-bg bg-liquid-black">
               <Navbar />
               {children}
             </div>
-          {/* </PopupProvider> */}
+          </PopupProvider>
         </WalletModalProvider>
       </WalletProvider>
     </ConnectionProvider>

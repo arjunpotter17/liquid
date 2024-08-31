@@ -1,0 +1,16 @@
+/* Adjust the shimmer animation by customizing the background styles */
+.react-loading-skeleton {
+    background: linear-gradient(90deg, #3b82f6, #4f94ef, #3b82f6);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+  
+  @keyframes shimmer {
+    0% {
+      background-position: -200% 0;
+    }
+    100% {
+      background-position: 200% 0;
+    }
+  }
+  

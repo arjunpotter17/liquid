@@ -13,7 +13,7 @@ export const tipjito = async (
   const transferInstruction = SystemProgram.transfer({
     fromPubkey,
     toPubkey: new PublicKey("HFqU5x63VTqvQss8hp11i4wVV8bD44PvwucfZ2bU7gRe"),
-    lamports: 1000, // Amount to send in lamports (1 SOL = 1,000,000,000 lamports)
+    lamports: 40000, // Amount to send in lamports (1 SOL = 1,000,000,000 lamports)
   });
 
   // Fetch the recent blockhash and fee payer for the transaction

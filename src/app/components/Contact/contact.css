@@ -1,0 +1,20 @@
+.shadow {
+    /* Define initial styles */
+    transition: all 0.18s ease-in-out; /* Add transition for smooth effect */
+  
+    /* Specify the background color */
+    --tw-bg-opacity: 1;
+    background-color: rgb(211, 178, 128 / var(--tw-bg-opacity));
+  
+    /* Define shadow effect */
+    box-shadow: none; /* Initially no shadow */
+  
+    /* Add shadow on hover */
+    &:hover {
+      box-shadow: 0 0 10px rgba(211, 178, 128, 1); /* Adjust the blur radius and opacity as needed */
+      transform: scale(0.98);
+    }
+  }
+
+
+  

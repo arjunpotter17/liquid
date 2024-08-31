@@ -1,0 +1,38 @@
+.card {
+    transition: transform 0.5s;
+    transform-style: preserve-3d;
+    position: relative;
+  }
+  
+  .cardFlip {
+    transform: rotateY(180deg);
+  }
+  
+  .cardFront,
+  .cardBack {
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    position: absolute;
+  }
+  
+  .cardBack {
+    transform: rotateY(180deg);
+  }
+
+  .shadow-card{
+
+  }
+  
+  .shadow-card:hover {
+    box-shadow: 0px 10px 40px rgba(125, 149, 226, 0.3); /* Adjust the shadow color and opacity as needed */
+  }
+  
+  
+  .shrink {
+    transition: transform 0.3s;
+  }
+  
+  .shrink:hover {
+    transform: scale(0.9);
+  }
+  

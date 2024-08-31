@@ -1,6 +1,6 @@
 export const CloseIcon = ({
     size = "40",
-    color = "#A04000",
+    color = "#60a5fa",
   }: {
     size?: string;
     color?: string;

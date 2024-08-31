@@ -11,14 +11,20 @@ export const liquidate = async (mint: string) => {
     console.log('fetching pools with collID', nftData[0]?.collId);
     const poolsResponse = await fetch('/api/pools?collId=' + nftData[0]?.collId);
     const poolsData = await poolsResponse.json(); // Parse the response as JSON
-    const highestPricePool = poolsData?.reduce((maxPool: any, pool: any) => {
+    // const nonZeroPools = poolsData.filter((pool: any) => pool.balance > 0);
+    const tradeablePools = poolsData.filter((pool: any) => pool.takerSellCount < pool.maxTakerSellCount);
+    const poolsWithBalance = tradeablePools?.filter((pool: any) => pool.escrowBalance > pool.currentSellPrice || pool.marginBalance > pool.currentSellPrice);
+    const highestPricePool = poolsWithBalance?.reduce((maxPool: any, pool: any) => {
       return pool.currentSellPrice > (maxPool?.currentSellPrice || 0)
         ? pool
         : maxPool;
     }, null);
 
     console.log('Pool with the highest currentSellPrice:', highestPricePool);
-
+    if (!highestPricePool) {
+      console.error('No pool with a currentSellPrice');
+      return;
+    }
     const blockhash = (await connection.getLatestBlockhash()).blockhash;
 
     const sellTx = await fetch(
