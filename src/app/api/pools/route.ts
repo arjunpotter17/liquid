@@ -4,8 +4,6 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const collId = searchParams.get('collId');
 
-  console.log('Liquidating:', collId);
-
   const response = await fetch(
     `https://api.mainnet.tensordev.io/api/v1/collections/pools?collId=${collId}`,
     {

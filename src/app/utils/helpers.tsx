@@ -82,12 +82,12 @@ export const highestPricePool = async (mint: string) => {
     console.log("Pool with the highest currentSellPrice:", highestPricePool);
     if (!highestPricePool) {
       console.error("No pool with a currentSellPrice");
-      return;
+      throw new Error;
     }
     return highestPricePool;
   } catch (error) {
     console.error("Error fetching highest price pool:", error);
-    return null;
+    throw new Error("Error fetching highest price pool");
   }
 };
 
@@ -118,5 +118,5 @@ export default function truncateWallet(str: string, num: number, middle: boolean
 
 
 export const handleCopy = () => {
- toast("Copied to clipboard");
+ toast.success("Copied to clipboard");
 }

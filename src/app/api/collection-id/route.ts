@@ -4,8 +4,6 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const mint = searchParams.get('mint');
 
-  console.log('Liquidating:', mint);
-
   const response = await fetch(
     `https://api.mainnet.tensordev.io/api/v1/mint?mints=${mint}`,
     {

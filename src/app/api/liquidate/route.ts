@@ -8,8 +8,6 @@ export async function GET(request: Request) {
   const blockhash = searchParams.get('blockhash');
   const bidAddress = searchParams.get('bidAddress');
 
-  console.log('Liquidating:', seller, mint, minPrice, blockhash, bidAddress);
-
   const response = await fetch(
     `https://api.mainnet.tensordev.io/api/v1/tx/sell?seller=${seller}&mint=${mint}&minPrice=${minPrice}&blockhash=${blockhash}&bidAddress=${bidAddress}`,
     {

@@ -46,25 +46,27 @@ const NFTDetailsView: React.FC<NFTDetailsViewProps> = ({
 
   // Effect to handle the countdown timer
 
-useEffect(() => {
-  // Check if the selected token is not native SOL
-  if (selectedToken && selectedToken.address !== 'So11111111111111111111111111111111111111112') {
-    if (countdown > 0) {
-      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
-      return () => clearTimeout(timer);
+  useEffect(() => {
+    // Check if the selected token is not native SOL
+    if (
+      selectedToken &&
+      selectedToken.address !== "So11111111111111111111111111111111111111112"
+    ) {
+      if (countdown > 0) {
+        const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+        return () => clearTimeout(timer);
+      } else {
+        // When countdown reaches 0, set loading to true, fetch new price, and reset countdown
+        setPriceLoading(true);
+        fetchNewPrice().then(() => {
+          setPriceLoading(false);
+          setCountdown(15); // Reset countdown
+        });
+      }
     } else {
-      // When countdown reaches 0, set loading to true, fetch new price, and reset countdown
-      setPriceLoading(true);
-      fetchNewPrice().then(() => {
-        setPriceLoading(false);
-        setCountdown(15); // Reset countdown
-      });
+      setCountdown(15); // Reset countdown
     }
-  } else{
-    setCountdown(15); // Reset countdown
-  }
-}, [countdown, fetchNewPrice, setPriceLoading, selectedToken]);
-
+  }, [countdown, fetchNewPrice, setPriceLoading, selectedToken]);
 
   return (
     <div className="font-liquid-regular">
@@ -128,9 +130,13 @@ useEffect(() => {
           )}
         </div>
         {/* Display the countdown timer */}
-        {selectedToken && selectedToken.address !== 'So11111111111111111111111111111111111111112' && <div className="text-liquid-blue text-sm font-liquid-regular">
-          {countdown > 0 ? `Refreshing in ${countdown}s` : "Refreshing..."}
-        </div>}
+        {selectedToken &&
+          selectedToken.address !==
+            "So11111111111111111111111111111111111111112" && (
+            <div className="text-liquid-blue text-sm font-liquid-regular">
+              {countdown > 0 ? `Refreshing in ${countdown}s` : "Refreshing..."}
+            </div>
+          )}
       </div>
       <p className="mb-4 text-liquid-blue">
         <span className="text-liquid-gray">Mint:</span>{" "}
@@ -173,7 +179,7 @@ useEffect(() => {
           {selectedToken?.symbol || "Select a token"}
           <span className="ml-2">&#9662;</span>
         </button>
-        {isDropdownOpen && (
+        {isDropdownOpen && price?.rate !== 0 && (
           <ul className="absolute w-full bg-liquid-black border border-liquid-blue rounded mt-1 z-10">
             {stables.map((token) => (
               <li
@@ -209,10 +215,11 @@ useEffect(() => {
       </div>
 
       <button
-        className="mt-4 p-2 w-full bg-liquid-blue hover:bg-liquid-dark-blue text-liquid-black cursor-pointer rounded"
+        disabled={price?.rate === 0}
+        className="mt-4 p-2 w-full bg-liquid-blue hover:bg-liquid-dark-blue text-liquid-black cursor-pointer rounded disabled:bg-liquid-gray disabled:cursor-not-allowed"
         onClick={onLiquidate}
       >
-        Liquidate
+        {price?.rate === 0 ? "No pools available" : "Liquidate"}
       </button>
     </div>
   );

@@ -25,8 +25,9 @@ const config: Config = {
         "liquid-semibold": ["NeueMachina Seminbold", "sans-serif"],
       },
       fontSize: {
-        "liquid-banner-header": "3.25rem",
-        "liquid-banner-header-mobile": "2rem",
+        "liquid-banner-header": "6rem",
+        "liquid-banner-header-mobile": "3.5rem",
+        "liquid-logo":"2rem",
         "liquid-title": "1.5rem",
         "liquid-title-mobile": "1rem",
         "liquid-subtitle": "1rem",

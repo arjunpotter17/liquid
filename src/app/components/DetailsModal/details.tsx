@@ -5,6 +5,7 @@ import WarningComponent from "./components/warningScreen"; // Import WarningComp
 import {
   getConnection,
   getNftInfo,
+  handleCopy,
   highestPricePool,
 } from "@/app/utils/helpers";
 import {
@@ -19,6 +20,8 @@ import { PublicKey, ParsedAccountData } from "@solana/web3.js";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { toast } from "sonner";
 import { handleLiquidate } from "@/app/utils/handleLiquidate";
+import CopyToClipboard from "react-copy-to-clipboard";
+import Spinner from "../Spinner/Spinner";
 
 const NFTDetailsModal: React.FC<NFTDetailsModalProps> = ({ nft, onClose }) => {
   const connection = getConnection();
@@ -33,13 +36,35 @@ const NFTDetailsModal: React.FC<NFTDetailsModalProps> = ({ nft, onClose }) => {
   const [selectedSlippage, setSelectedSlippage] = useState(0.5);
   const [loadingPrice, setLoadingPrice] = useState<boolean>(false);
   const [swapData, setSwapData] = useState<any | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [showMessage, setShowMessage] = useState<boolean>(false);
+  const [result, setResults] = useState<string[]>([]);
+  const [isAnimating, setIsAnimating] = useState(true);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    //opening animation after comp mounts
+    const timer = setTimeout(() => {
+      setIsVisible(true);
+    }, 10); 
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  const handleClose = () => {
+    setIsVisible(false);
+    setTimeout(() => {
+      setIsAnimating(false);
+      onClose();
+    }, 500);
+  };
 
   const fetchDetails = async () => {
     try {
       setLoadingPrice(true);
       const fetchedPriceDetails = await getNftInfo(nft.mint.publicKey);
-      const fetchedPool = await highestPricePool(nft.mint.publicKey);
       setPriceDetails(fetchedPriceDetails);
+      const fetchedPool = await highestPricePool(nft.mint.publicKey);
       setPrice({
         rate: parseFloat(fetchedPriceDetails?.lastSale?.price),
         currency: "Sol",
@@ -49,18 +74,28 @@ const NFTDetailsModal: React.FC<NFTDetailsModalProps> = ({ nft, onClose }) => {
       setLoadingPrice(false);
     } catch (error) {
       console.error("Error fetching NFT details:", error);
+      toast.error("NFT does not have a pool");
+      setPrice({
+        rate: 0,
+        currency: "Sol",
+      });
+      setLoadingPrice(false);
     }
   };
 
   const handleNFTLiquidate = async () => {
+    setLoading(true);
     if (!wallet.connected || !selectedToken) {
       console.log("Wallet not connected");
-      toast("Wallet not connected or token not selected");
+      toast.error("Wallet not connected or token not selected");
       return;
     }
     if (nft && swapData) {
       const result = await handleLiquidate(nft.publicKey, wallet, swapData);
-      console.log(result);
+      if (!result) return;
+      setResults(result);
+      setLoading(false);
+      setShowMessage(true);
     }
   };
 
@@ -123,12 +158,12 @@ const NFTDetailsModal: React.FC<NFTDetailsModalProps> = ({ nft, onClose }) => {
           setLoadingPrice(false);
         }
       } else {
-        // setPrice(parseFloat(pool?.currentSellPrice as string) / 10 ** 9);
         setPrice({
           rate: parseFloat(pool?.currentSellPrice as string) / 10 ** 9,
           currency: token.symbol,
           logo: token.logoURI,
         });
+        setSwapData(null);
       }
     }
   };
@@ -138,58 +173,130 @@ const NFTDetailsModal: React.FC<NFTDetailsModalProps> = ({ nft, onClose }) => {
   };
 
   const handleProceed = () => {
-    setShowWarning(false);
     handleNFTLiquidate();
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-liquid-popup-bg bg-opacity-50">
-      <div className="relative bg-liquid-card-gray-bg px-6 pt-6 pb-3 rounded-lg max-w-lg w-full mx-4 liquid-md:mx-0 h-[500px] overflow-y-auto scrollbar-thin scrollbar-track-liquid-black scrollbar-thumb-liquid-dark-blue">
-        {showWarning ? (
-          <div className="w-full h-full self-center flex flex-col justify-between">
-            <WarningComponent />
-            <div className="flex w-full gap-x-2">
-              <button
-                className="mt-4 p-2 w-full bg-liquid-blue hover:bg-liquid-dark-blue text-white cursor-pointer rounded"
-                onClick={() => setShowWarning(false)}
-              >
-                Back
-              </button>
-              <button
-                className="mt-4 p-2 w-full bg-liquid-blue hover:bg-liquid-dark-blue text-white cursor-pointer rounded"
-                onClick={handleProceed}
-              >
-                Proceed
-              </button>
-            </div>
+    <>
+      {isAnimating && (
+        <div
+          className={`fixed inset-0 z-50 flex items-center justify-center bg-liquid-popup-bg bg-opacity-50 transition-opacity duration-500 ease-in-out ${
+            isVisible ? "opacity-100" : "opacity-0"
+          }`}
+        >
+          <div className="relative bg-liquid-card-gray-bg px-6 pt-6 pb-3 rounded-lg max-w-lg w-full mx-4 liquid-md:mx-0 h-[500px] overflow-y-auto scrollbar-thin scrollbar-track-liquid-black scrollbar-thumb-liquid-dark-blue">
+            {showWarning ? (
+              <div className="w-full h-full self-center flex flex-col justify-between">
+                <WarningComponent />
+                <div className="flex w-full gap-x-2">
+                  <button
+                    disabled={loading}
+                    className="mt-4 p-2 w-full bg-liquid-blue hover:bg-liquid-dark-blue text-white cursor-pointer rounded"
+                    onClick={() => setShowWarning(false)}
+                  >
+                    Back
+                  </button>
+                  <button
+                    disabled={loading}
+                    className="mt-4 p-2 w-full bg-liquid-blue hover:bg-liquid-dark-blue text-white cursor-pointer rounded"
+                    onClick={handleProceed}
+                  >
+                    {loading ? <Spinner size={25}/> : "Proceed"}
+                  </button>
+                </div>
+              </div>
+            ) : showMessage ? (
+              <div className="w-full h-full self-center flex flex-col justify-between p-5">
+                <div className="flex flex-col items-center w-full">
+                  <p className="text-liquid-blue text-left w-full text-liquid-logo font-liquid-semibold mt-5">
+                    Liquidation Successful
+                  </p>
+                  <p className="text-liquid-dark-white font-liquid-regular text-[20px] mt-2">
+                    Your NFT has been liquidated{" "}
+                    {result.length > 1 && <span>to your desired token</span>}.
+                    Please check your wallet and view transaction details below.
+                  </p>
+                  <div className="flex flex-col w-full mt-4 text-liquid-dark-white font-liquid-regular gap-y-3">
+                    <p>
+                      Sell Transaction:{" "}
+                      <span
+                        className="font-liquid-regular cursor-pointer hover:underline text-liquid-blue"
+                        onClick={() =>
+                          window.open(
+                            `https://explorer.solana.com/tx/${result[0]}`,
+                            "blank"
+                          )
+                        }
+                      >
+                        Explorer
+                      </span>{" "}
+                      |{" "}
+                      <CopyToClipboard text={result[0]} onCopy={handleCopy}>
+                        <span className="font-liquid-regular cursor-pointer hover:underline text-liquid-blue">
+                          Tx Signature
+                        </span>
+                      </CopyToClipboard>
+                    </p>
+                    {result?.length > 1 && (
+                      <p>
+                        Swap Transaction:{" "}
+                        <span
+                          className="font-liquid-regular cursor-pointer hover:underline text-liquid-blue"
+                          onClick={() =>
+                            window.open(
+                              `https://explorer.solana.com/tx/${result[1]}`,
+                              "blank"
+                            )
+                          }
+                        >
+                          Explorer
+                        </span>{" "}
+                        |{" "}
+                        <CopyToClipboard text={result[1]} onCopy={handleCopy}>
+                          <span className="font-liquid-regular cursor-pointer hover:underline text-liquid-blue">
+                            Tx Signature
+                          </span>
+                        </CopyToClipboard>
+                      </p>
+                    )}
+                  </div>
+                </div>
+                <button
+                  className="mt-4 p-2 w-full bg-liquid-blue hover:bg-liquid-dark-blue text-white cursor-pointer rounded"
+                  onClick={handleClose}
+                >
+                  Close
+                </button>
+              </div>
+            ) : !showTokenSearch ? (
+              <NFTDetailsView
+                nft={nft}
+                priceDetails={priceDetails}
+                pool={pool}
+                price={price}
+                selectedToken={selectedToken as TokenInfo}
+                onTokenChange={handleTokenChange}
+                onClose={handleClose}
+                onLiquidate={handleLiquidateClick}
+                selectedSlippage={selectedSlippage}
+                setSelectedSlippage={setSelectedSlippage}
+                setShowTokenSearch={setShowTokenSearch}
+                priceLoading={loadingPrice}
+                setPriceLoading={setLoadingPrice}
+                fetchNewPrice={priceUpdate}
+              />
+            ) : (
+              <TokenSearchView
+                searchTerm={searchTerm}
+                setSearchTerm={setSearchTerm}
+                onClose={() => setShowTokenSearch(false)}
+                onTokenSelect={handleTokenChange}
+              />
+            )}
           </div>
-        ) : !showTokenSearch ? (
-          <NFTDetailsView
-            nft={nft}
-            priceDetails={priceDetails}
-            pool={pool}
-            price={price}
-            selectedToken={selectedToken as TokenInfo}
-            onTokenChange={handleTokenChange}
-            onClose={onClose}
-            onLiquidate={handleLiquidateClick}
-            selectedSlippage={selectedSlippage}
-            setSelectedSlippage={setSelectedSlippage}
-            setShowTokenSearch={setShowTokenSearch}
-            priceLoading={loadingPrice}
-            setPriceLoading={setLoadingPrice}
-            fetchNewPrice={priceUpdate}
-          />
-        ) : (
-          <TokenSearchView
-            searchTerm={searchTerm}
-            setSearchTerm={setSearchTerm}
-            onClose={() => setShowTokenSearch(false)}
-            onTokenSelect={handleTokenChange}
-          />
-        )}
-      </div>
-    </div>
+        </div>
+      )}
+    </>
   );
 };
 

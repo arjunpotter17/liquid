@@ -14,7 +14,6 @@ const fetchNFTs = async (ownerPublicKey: PublicKey) => {
       umi,
       ownerPublicKey
     );
-    console.log(assetsByOwner);
     const nfts = assetsByOwner.filter(
       (token) => token?.metadata?.uri.length > 1
     );
@@ -24,7 +23,6 @@ const fetchNFTs = async (ownerPublicKey: PublicKey) => {
         return { ...nft, metadataDetails: metadataResponse.data };
       })
     );
-    console.log(metaNfts);
     return metaNfts;
   } catch (error) {
     console.error("Error fetching NFTs:", error);

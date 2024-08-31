@@ -1,38 +1,48 @@
-/* Styles for the wave effect */
-.water {
-  position: absolute;
-  bottom: 0; /* Keep the bottom edge constant */
-  width: 200%; /* Extend width to cover the viewport horizontally */
-  height: 30%; /* Reduced height for the water body to make waves more visible */
-  background-color: #2d3748; /* Blue color for the water */
-  animation: wave-animation 8s linear infinite; /* Continuous wave animation */
+.circle{
+  width: 450px;
+  height: 450px;
+  border: 1px solid #495158;
+  border-radius: 50%;
+  overflow: hidden;
 }
 
-/* Keyframes for the wave animation */
-@keyframes wave-animation {
-  0% {
-    transform: translateX(0);
-    border-top-left-radius: 50% 40%;
-    border-top-right-radius: 50% 40%;
+.wave{
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: #60a5fa;
+  border-radius: 50%;
+  box-shadow: inset 0 0 50px rgba(0,0,0,0.5);   
+}
+
+.wave::before,
+.wave::after{
+  content: '';
+  position: absolute;
+  width: 200%;
+  height: 200%;
+  top: 0;
+  left: 50%;
+  transform: translate(-50%, -75%);
+  background-color: #000;
+}
+
+.wave::before{
+  border-radius: 45%;
+  background: rgba(17, 19, 20, 1);
+  animation:animate 5s linear infinite;
+}
+
+.wave::after{
+  border-radius: 40%;
+  background: rgba(17, 19, 20, 0.5);
+  animation:animate 10s linear infinite;
+}
+@keyframes animate{
+  0%{
+    transform: translate(-50%, -75%) rotate(0deg);
   }
-  25% {
-    border-top-left-radius: 40% 35%;
-    border-top-right-radius: 60% 30%;
-    transform: translateX(-25%);
-  }
-  50% {
-    transform: translateX(-50%);
-    border-top-left-radius: 50% 40%;
-    border-top-right-radius: 50% 40%;
-  }
-  75% {
-    border-top-left-radius: 60% 45%;
-    border-top-right-radius: 40% 35%;
-    transform: translateX(-75%);
-  }
-  100% {
-    transform: translateX(0); /* Looping back to start */
-    border-top-left-radius: 50% 40%;
-    border-top-right-radius: 50% 40%;
+  100%{
+    transform: translate(-50%, -75%) rotate(360deg);
   }
 }

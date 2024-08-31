@@ -11,37 +11,22 @@ import { WalletModalProvider } from "@solana/wallet-adapter-react-ui";
 import Navbar from "../components/AppBar/appbar";
 import { PopupProvider } from "../hooks/use-popup";
 import { Toaster } from "sonner";
-// import { PopupProvider } from "../hooks/use-popup";
-// import { ToastContainer } from "react-toastify";
-// import "react-toastify/dist/ReactToastify.css";
 
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const endpoint = clusterApiUrl("devnet");
+  const endpoint = clusterApiUrl("mainnet-beta");
   const wallets = useMemo(() => [], []);
 
   return (
     <ConnectionProvider endpoint={endpoint}>
-      <WalletProvider wallets={wallets}>
+      <WalletProvider wallets={wallets} autoConnect>
         <WalletModalProvider>
           <PopupProvider>
-            {/* <ToastContainer
-              position="bottom-right"
-              autoClose={2500}
-              hideProgressBar
-              newestOnTop={false}
-              closeOnClick
-              rtl={false}
-              pauseOnFocusLoss
-              draggable
-              pauseOnHover
-              theme="light"
-            /> */}
-            <Toaster />
-            <div className="relative !overflow-y-auto scroll-smooth scrollbar-thin scrollbar-track-liquid-black scrollbar-thumb-liquid-popup-bg bg-liquid-black">
+            <Toaster richColors/>
+            <div className="relative !overflow-y-auto scroll-smooth scrollbar-thin scrollbar-track-liquid-black scrollbar-thumb-liquid-popup-bg bg-liquid-black ">
               <Navbar />
               {children}
             </div>

@@ -48,7 +48,7 @@ const SidebarResponsive = ({ isOpen, setIsOpen }: any): JSX.Element => {
           }
         >
           <Link href="/" onClick={handleToggle}>
-            <p className="text-liquid-dark-blue text-liquid-banner-header-mobile font-liquid-regular z-10 cursor-pointer">
+            <p className="text-liquid-blue text-liquid-logo font-liquid-bold z-10 cursor-pointer">
               Liquid
             </p>
           </Link>
@@ -67,7 +67,7 @@ const SidebarResponsive = ({ isOpen, setIsOpen }: any): JSX.Element => {
       >
         <div className="w-full px-2 flex items-center justify-between">
           <Link href="/" onClick={handleToggle}>
-            <p className="text-liquid-dark-blue text-liquid-title font-liquid-bold z-10 cursor-pointer">
+            <p className="text-liquid-blue text-liquid-logo font-liquid-bold z-10 cursor-pointer">
               Liquid.
             </p>
           </Link>
@@ -81,7 +81,7 @@ const SidebarResponsive = ({ isOpen, setIsOpen }: any): JSX.Element => {
           <li
             onClick={handleToggle}
             className={`cursor-pointer ${
-              active === "Home" ? "text-liquid-dark-blue" : "text-liquid-white"
+              active === "Home" ? "text-liquid-blue" : "text-liquid-white"
             }`}
           >
             <Link href="/">Home</Link>
@@ -89,7 +89,7 @@ const SidebarResponsive = ({ isOpen, setIsOpen }: any): JSX.Element => {
           <li
             onClick={handleToggle}
             className={`cursor-pointer ${
-              active === "Trade" ? "text-liquid-dark-blue" : "text-liquid-white"
+              active === "Trade" ? "text-liquid-blue" : "text-liquid-white"
             }`}
           >
             <Link href="/trade">Trade</Link>
