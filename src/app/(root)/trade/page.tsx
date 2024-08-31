@@ -29,7 +29,7 @@ const Trade: React.FC = () => {
   return !wallet.connected ? (
     <div className="flex justify-center min-h-screen items-center p-6 pt-[74px]">
       <p className="flex justify-center items-center w-full h-full text-gray-500 font-liquid-semibold">
-        I cannot see your NFTs without access to your wallet my friend. Don't be
+        I cannot see your NFTs without access to your wallet my friend. Don&apos;t be
         shy!
       </p>
     </div>

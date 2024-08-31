@@ -8,7 +8,7 @@ const WarningComponent: React.FC = () => {
       <div>
         <h2 className="font-bold text-yellow-700 text-lg">Warning</h2>
         <p className="text-yellow-700 mt-2">
-        Liquid utilizes Tensor and Jupiter APIs to facilitate NFT sales and swaps. While both platforms are highly reliable, please be aware that Liquid cannot guarantee a 100% success rate due to our reliance on these third-party services. By proceeding, you acknowledge the possibility of receiving SOL for your NFT in the rare event of a failure with the Jupiter API or any unforeseen issues that may arise on Liquid's end.
+        Liquid utilizes Tensor and Jupiter APIs to facilitate NFT sales and swaps. While both platforms are highly reliable, please be aware that Liquid cannot guarantee a 100% success rate due to our reliance on these third-party services. By proceeding, you acknowledge the possibility of receiving SOL for your NFT in the rare event of a failure with the Jupiter API or any unforeseen issues that may arise on Liquid&apos;s end.
 
 
         </p>
