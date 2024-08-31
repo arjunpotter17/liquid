@@ -1,3 +1,4 @@
+"use client";
 import React from "react";
 import "./banner.css"; // Ensure you have the CSS file with custom styles
 import { useWindowSize } from "@/app/hooks/use-weindowSize";
