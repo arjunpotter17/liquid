@@ -5,6 +5,8 @@ import { PublicKey as umiKey } from "@metaplex-foundation/umi";
 import { useNFT } from "@/app/utils/fetchNFTs";
 import { motion } from "framer-motion";
 import NFTDetailsModal from "../../components/DetailsModal/details";
+import { Tooltip } from "react-tooltip";
+import "react-tooltip/dist/react-tooltip.css";
 
 const Trade: React.FC = () => {
   // States
@@ -72,7 +74,20 @@ const Trade: React.FC = () => {
           initial="hidden"
           animate="visible"
         >
-          <p className="text-liquid-blue mb-5 text-liquid-title">Inventory</p>
+          <div className="flex justify-between w-full items-center">
+            <p className="text-liquid-blue mb-5 text-liquid-title">Inventory</p>
+            <button
+              className="text-liquid-gray hover:text-liquid-white hover:bg-liquid-blue font-liquid-bold rounded-[50%] border border-liquid-gray w-5 text-sm"
+              data-tooltip-id="infoTooltip"
+              data-tooltip-content="Liquid v0 uses the Metaplex UMI standard to fetch tokens and token details. If you do not see an NFT that you own, it is most likely that your token is not present in the Metaplex registry. If you feel this is wrong, please contact us."
+            >
+              i
+            </button>
+
+            {/* Tooltip */}
+            <Tooltip id="infoTooltip" place="top" className="max-w-72" />
+          </div>
+
           <div className="w-full h-full flex flex-col items-center liquid-md:flex-row liquid-md:justify-start liquid-md:items-start gap-4">
             {nfts?.map((nft: any) => (
               <motion.div

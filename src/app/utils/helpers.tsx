@@ -1,19 +1,20 @@
 import { Connection } from "@solana/web3.js";
 import { toast } from "sonner";
+import {PublicKey} from "@solana/web3.js";
 
 // Fetcher function to use with SWR or similar data-fetching libraries
 export const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 // Function to get Solana connection using the environment variable
 export const getConnection = () => {
-  const apiKey = process.env.HELIUS_API_KEY; // Make sure to use the correct environment variable
+  const apiKey = process.env.NEXT_PUBLIC_HELIUS_RPC_KEY; // Make sure to use the correct environment variable
   // Create a new Solana connection with the provided API key
   return new Connection(`https://mainnet.helius-rpc.com/?api-key=${apiKey}`);
 };
 
 // Function to get the RPC endpoint for the specified network
 export const getEndpoint = (network: string) => {
-  const apiKey = process.env.HELIUS_API_KEY; // Make sure to use the correct environment variable
+  const apiKey = process.env.NEXT_PUBLIC_HELIUS_RPC_KEY; // Make sure to use the correct environment variable
   switch (network) {
     case "mainnet":
       return `https://mainnet.helius-rpc.com/?api-key=${apiKey}`;
@@ -119,4 +120,37 @@ export default function truncateWallet(str: string, num: number, middle: boolean
 
 export const handleCopy = () => {
  toast.success("Copied to clipboard");
+}
+
+export async function checkWalletBalance(
+  publicKey: PublicKey,
+  amount: number
+): Promise<boolean> {
+  const maxRetries = 3;
+  const interval = 5000; // 5 seconds in milliseconds
+  const connection = getConnection();
+  return new Promise(async (resolve) => {
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+      try {
+        const balance = await connection.getBalance(publicKey);
+
+        // Check if the balance is greater than or equal to the specified amount
+        if (balance >= amount) {
+          resolve(true);
+          return;
+        }
+
+        // Wait for the specified interval before checking again
+        if (attempt < maxRetries - 1) {
+          await new Promise((res) => setTimeout(res, interval));
+        }
+      } catch (error) {
+        console.error("Failed to fetch balance", error);
+        break; // Exit the loop if an error occurs
+      }
+    }
+
+    // If the loop completes without finding sufficient balance
+    resolve(false);
+  });
 }

@@ -16,7 +16,7 @@ const Banner: React.FC = () => {
         </h1>
         <p className="">Instant liquidity.</p>
         <p>
-          Any time, any <span className="text-liquid-blue">type</span>
+          Any time, any <span className="text-liquid-blue">token</span>.
         </p>
       </div>
       {windowSize > 500 && <div className="flex items-center justify-center relative">

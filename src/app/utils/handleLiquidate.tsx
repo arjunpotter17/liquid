@@ -5,13 +5,19 @@ import {
   TransactionConfirmationStrategy,
 } from "@solana/web3.js";
 import { liquidate } from "./liquidate";
-import { getConnection, sleep, swapTransaction } from "./helpers";
+import {
+  checkWalletBalance,
+  getConnection,
+  sleep,
+  swapTransaction,
+} from "./helpers";
 import { toast } from "sonner";
 
 export const handleLiquidate = async (
   mint: string,
   wallet: WalletContextState,
-  swapData: any
+  swapData: any,
+  setLoading: React.Dispatch<React.SetStateAction<boolean>>
 ): Promise<string[] | null> => {
   if (!wallet.signAllTransactions || !wallet.publicKey) {
     console.error("Wallet does not support signing transactions");
@@ -72,6 +78,10 @@ export const handleLiquidate = async (
       signedTxs = await wallet.signAllTransactions([...txsToSign]);
     }
 
+    setLoading(true);
+
+    console.log("signed all transactions");
+
     const sign = await connection.sendRawTransaction(signedTxs[0].serialize(), {
       skipPreflight: false,
       preflightCommitment: "processed",
@@ -101,20 +111,15 @@ export const handleLiquidate = async (
     } else {
       toast.success("Sell Transaction successful");
       if (!swapData) return [sign];
-      const balance = await connection.getBalance(wallet.publicKey);
-      if (balance < swapData.inAmount) {
-        toast.loading("Waiting for funds to hit your wallet");
-        sleep(10000);
-      }
-      //even tho we are awaiting the confirmation, it takes a while for the money to hit the wallet
-      const reBalance = await connection.getBalance(wallet.publicKey);
-      if (reBalance < swapData.inAmount) {
-        toast.loading("Funds have not hit your wallet, still waiting");
-        sleep(10000);
-      }
-      if (reBalance < swapData.inAmount) {
-        toast.error("Funds did not hit your wallet in time, aborting swap");
+      const res = await checkWalletBalance(
+        wallet?.publicKey,
+        swapData?.inAmount
+      );
+      if (res === false) {
+        toast.error("Funds took to long to hit wallet. Aborting swap.");
         return [sign];
+      } else {
+        toast.success("Funds reached wallet. Swap initiated");
       }
       const sig = await connection.sendRawTransaction(
         signedTxs[1].serialize(),
@@ -151,7 +156,9 @@ export const handleLiquidate = async (
     }
   } catch (error) {
     console.error("Failed to liquidate", error);
-    toast.error("Failed to liquidate. Please try again later.");
+    toast.error(
+      "Failed to liquidate. Please ensure you have enough sol for gas. Contact if the problem still persists."
+    );
     return null;
   }
 };

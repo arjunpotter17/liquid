@@ -10,7 +10,7 @@ export async function GET(request: Request) {
       method: 'GET',
       headers: {
         'accept': 'application/json',
-        'x-tensor-api-key': '9c07798b-392c-4206-839e-5b3c9f6d2735',
+        "x-tensor-api-key": `${process.env.NEXT_PUBLIC_TENSOR_API_KEY}`,
       },
     }
   );

@@ -1,16 +1,16 @@
-import { NextResponse } from 'next/server';
+import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const mint = searchParams.get('mint');
+  const mint = searchParams.get("mint");
 
   const response = await fetch(
     `https://api.mainnet.tensordev.io/api/v1/mint?mints=${mint}`,
     {
-      method: 'GET',
+      method: "GET",
       headers: {
-        accept: 'application/json',
-        'x-tensor-api-key': '9c07798b-392c-4206-839e-5b3c9f6d2735',
+        accept: "application/json",
+        "x-tensor-api-key": `${process.env.NEXT_PUBLIC_TENSOR_API_KEY}`,
       },
     }
   );

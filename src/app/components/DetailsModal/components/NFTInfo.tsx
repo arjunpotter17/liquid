@@ -100,12 +100,21 @@ const NFTDetailsView: React.FC<NFTDetailsViewProps> = ({
         </div>
       )}
 
-      <p className="text-liquid-blue">
-        <span className="mb-2 text-liquid-gray">Last Sale Price:</span>{" "}
-        {parseFloat(priceDetails?.[0]?.lastSale?.price as string) / 10 ** 9 ??
-          "Unknown"}{" "}
-        Sol
-      </p>
+      {priceDetails ? (
+        <p className="text-liquid-blue">
+          <span className="mb-2 text-liquid-gray">Last Sale Price:</span>{" "}
+          {parseFloat(priceDetails[0]?.lastSale?.price as string) / 10 ** 9 ??
+            "Unknown"}{" "}
+          Sol
+        </p>
+      ) : (
+        <div className="text-liquid-blue flex">
+          <span className="mb-2 text-liquid-gray">Last Sale Price:</span>{" "}
+          
+          <PriceSkeleton/>
+        </div>
+      )}
+
       <div className="flex w-full justify-between">
         <div className="text-liquid-blue flex">
           {" "}

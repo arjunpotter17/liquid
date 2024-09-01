@@ -17,6 +17,7 @@ import {
 } from "@/app/interfaces";
 import { swapFunds } from "@/app/utils/swapFunds";
 import { PublicKey, ParsedAccountData } from "@solana/web3.js";
+import { PublicKey as umiKey } from "@metaplex-foundation/umi";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { toast } from "sonner";
 import { handleLiquidate } from "@/app/utils/handleLiquidate";
@@ -92,7 +93,7 @@ const NFTDetailsModal: React.FC<NFTDetailsModalProps> = ({ nft, onClose }) => {
 
   //get rid NFT
   const handleNFTLiquidate = async () => {
-    setLoading(true);
+    setShowWarning(false);
     if (!wallet.connected) {
       console.log("Wallet not connected");
       toast.error("Wallet not connected or token not selected");
@@ -101,26 +102,13 @@ const NFTDetailsModal: React.FC<NFTDetailsModalProps> = ({ nft, onClose }) => {
       return;
     }
     if (nft) {
-      mutate(["ALL_NFTS", wallet.publicKey as PublicKey], (nfts: any) => {
-        const index = nfts.findIndex(
-          (select: any) => select.publicKey === nft.publicKey
-        );
-
-        // If the sold NFT index is not found, just return the array with the fake at the start
-        if (index === -1) return [PLACEHOLDER_NFT, ...nfts];
-
-        // Create a new array with the fake NFT at the same position
-        const newNfts = [...nfts];
-        newNfts.splice(index, 1, PLACEHOLDER_NFT);
-
-        return newNfts;
-      });
       const result = await handleLiquidate(
         nft.publicKey,
         wallet,
-        !selectedToken ? null : swapData
+        !selectedToken ? null : swapData,
+        setLoading
       );
-      mutate(["ALL_NFTS", wallet.publicKey as PublicKey]);
+      mutate(["ALL_NFTS", wallet.publicKey as any as umiKey]);
       if (!result) {
         setTransactionError(true);
         setLoading(false);
