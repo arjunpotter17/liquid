@@ -41,7 +41,7 @@ const SidebarResponsive = ({ isOpen, setIsOpen }: any): JSX.Element => {
     <>
       {isOpen && <div className={isOpen ? "wall" : ""} />}
 
-      <header className={`h-[72px] top-0 w-full z-50 bg-transparent absolute`}>
+      <header className={`h-[72px] top-0 w-full z-50 bg-liquid-black fixed left-0`}>
         <div
           className={
             "flex justify-between items-center h-[72px] px-4 ct-md:px-10"
@@ -77,7 +77,7 @@ const SidebarResponsive = ({ isOpen, setIsOpen }: any): JSX.Element => {
           </button>
         </div>
 
-        <ul className="w-full text-[20px] mt-20 flex flex-col gap-y-8 text-center">
+        <ul className="w-full text-[20px] mt-20 flex flex-col gap-y-8 text-center font-liquid-bold">
           <li
             onClick={handleToggle}
             className={`cursor-pointer ${

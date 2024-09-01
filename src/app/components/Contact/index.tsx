@@ -1,6 +1,7 @@
 import XIcon from '@/app/Icons/xIcon';
 import './contact.css';
 import Link from 'next/link';
+import GithubIcon from '@/app/Icons/githubIcon';
 
 type Props = {};
 
@@ -31,7 +32,9 @@ const Contact = (props: Props) => {
             target="_blank"
             rel="noopener noreferrer"
           >
-            {/* <img src={github} alt="mail" className="cursor-pointer" /> */}
+            <div className='w-full h-full bg-liquid-dark-white rounded-[50%]'>
+            <GithubIcon/>
+            </div>
           </Link>
         </div>
       </div>

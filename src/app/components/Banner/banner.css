@@ -24,7 +24,7 @@
   top: 0;
   left: 50%;
   transform: translate(-50%, -75%);
-  background-color: #000;
+  background-color: #111314;
 }
 
 .wave::before{

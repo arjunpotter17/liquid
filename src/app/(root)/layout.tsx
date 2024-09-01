@@ -9,7 +9,6 @@ import {
 import { PhantomWalletAdapter } from "@solana/wallet-adapter-wallets";
 import { WalletModalProvider } from "@solana/wallet-adapter-react-ui";
 import Navbar from "../components/AppBar/appbar";
-import { PopupProvider } from "../hooks/use-popup";
 import { Toaster } from "sonner";
 
 export default function RootLayout({
@@ -24,13 +23,11 @@ export default function RootLayout({
     <ConnectionProvider endpoint={endpoint}>
       <WalletProvider wallets={wallets} autoConnect>
         <WalletModalProvider>
-          <PopupProvider>
             <Toaster richColors/>
             <div className="relative !overflow-y-auto scroll-smooth scrollbar-thin scrollbar-track-liquid-black scrollbar-thumb-liquid-popup-bg bg-liquid-black ">
               <Navbar />
               {children}
             </div>
-          </PopupProvider>
         </WalletModalProvider>
       </WalletProvider>
     </ConnectionProvider>

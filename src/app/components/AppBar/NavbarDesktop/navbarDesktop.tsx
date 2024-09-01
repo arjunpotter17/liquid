@@ -41,16 +41,16 @@ const NavbarDesktop = (): JSX.Element => {
   }, []);
 
   return (
-    <div className="!z-50 w-full justify-between flex items-center absolute py-4 px-10 ">
+    <div className="!z-50 w-full justify-between flex items-center fixed bg-liquid-black top-0 left-0 py-4 px-10 ">
       <Link href="/" passHref>
         <p className="text-liquid-blue text-liquid-logo font-liquid-bold z-10 cursor-pointer">
           Liquid.
         </p>
       </Link>
-      <div className="flex items-center justify-center gap-x-10 text-liquid-white font-liquid-semibold">
+      <div className="flex items-center justify-center gap-x-10 text-liquid-white">
         <Link href="/" passHref>
           <p
-            className={`cursor-pointer hover:text-liquid-blue ${
+            className={`cursor-pointer font-liquid-bold hover:text-liquid-blue ${
               active === "Home"
                 ? "text-liquid-blue"
                 : "text-liquid-white"
@@ -61,7 +61,7 @@ const NavbarDesktop = (): JSX.Element => {
         </Link>
         <Link href="/trade" passHref>
           <p
-            className={`cursor-pointer hover:text-liquid-blue ${
+            className={`cursor-pointer font-liquid-bold hover:text-liquid-blue ${
               active === "Trade" ? "text-liquid-blue" : "text-liquid-white"
             }`}
           >

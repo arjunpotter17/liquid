@@ -51,3 +51,16 @@ export const containerVariants = {
       },
     }),
   };
+
+  export const PLACEHOLDER_NFT ={
+    publicKey: "fakePublicKey1234567890", // Example public key
+    metadata: {
+      uri: "https://example.com/fake-nft-metadata.json", // Placeholder URI
+    },
+    metadataDetails: {
+      name: "NFT is being sold",
+      image: "https://via.placeholder.com/300.png", // Placeholder image URL
+    },
+    isLoading: true,
+  };
+  

@@ -12,11 +12,11 @@ export const handleLiquidate = async (
   mint: string,
   wallet: WalletContextState,
   swapData: any
-) => {
+): Promise<string[] | null> => {
   if (!wallet.signAllTransactions || !wallet.publicKey) {
     console.error("Wallet does not support signing transactions");
     toast("Wallet does not support signing transactions");
-    return;
+    return null;
   }
 
   try {
@@ -97,10 +97,10 @@ export const handleLiquidate = async (
     if (confirmation.value.err) {
       console.error("Sell Transaction failed", confirmation.value.err);
       toast.error("Sell Transaction failed");
-      return;
+      return null;
     } else {
       toast.success("Sell Transaction successful");
-      if (!swapData) return;
+      if (!swapData) return [sign];
       const balance = await connection.getBalance(wallet.publicKey);
       if (balance < swapData.inAmount) {
         toast.loading("Waiting for funds to hit your wallet");
@@ -142,7 +142,7 @@ export const handleLiquidate = async (
         toast.error(
           "Swap Transaction failed. Expected amount in Sol should be in your wallet."
         );
-        return;
+        return null;
       } else {
         console.log("Swap Transaction successful");
         toast.success("Swap Transaction successful");
@@ -152,5 +152,6 @@ export const handleLiquidate = async (
   } catch (error) {
     console.error("Failed to liquidate", error);
     toast.error("Failed to liquidate. Please try again later.");
+    return null;
   }
 };

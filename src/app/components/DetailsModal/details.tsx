@@ -22,10 +22,15 @@ import { toast } from "sonner";
 import { handleLiquidate } from "@/app/utils/handleLiquidate";
 import CopyToClipboard from "react-copy-to-clipboard";
 import Spinner from "../Spinner/Spinner";
+import { mutate } from "swr";
+import { PLACEHOLDER_NFT } from "@/app/constants/tokens";
 
 const NFTDetailsModal: React.FC<NFTDetailsModalProps> = ({ nft, onClose }) => {
+  //hooks
   const connection = getConnection();
   const wallet = useWallet();
+
+  //states
   const [selectedToken, setSelectedToken] = useState<TokenInfo | null>(null);
   const [priceDetails, setPriceDetails] = useState<PriceDetails[] | null>(null);
   const [price, setPrice] = useState<Price | null>(null);
@@ -39,14 +44,15 @@ const NFTDetailsModal: React.FC<NFTDetailsModalProps> = ({ nft, onClose }) => {
   const [loading, setLoading] = useState<boolean>(false);
   const [showMessage, setShowMessage] = useState<boolean>(false);
   const [result, setResults] = useState<string[]>([]);
-  const [isAnimating, setIsAnimating] = useState(true);
-  const [isVisible, setIsVisible] = useState(false);
+  const [isAnimating, setIsAnimating] = useState<boolean>(true);
+  const [isVisible, setIsVisible] = useState<boolean>(false);
+  const [transactionError, setTransactionError] = useState<boolean>(false);
 
+  //popup mount dismount animation
   useEffect(() => {
-    //opening animation after comp mounts
     const timer = setTimeout(() => {
       setIsVisible(true);
-    }, 10); 
+    }, 10);
 
     return () => clearTimeout(timer);
   }, []);
@@ -59,6 +65,7 @@ const NFTDetailsModal: React.FC<NFTDetailsModalProps> = ({ nft, onClose }) => {
     }, 500);
   };
 
+  //fetch NFT details
   const fetchDetails = async () => {
     try {
       setLoadingPrice(true);
@@ -83,36 +90,65 @@ const NFTDetailsModal: React.FC<NFTDetailsModalProps> = ({ nft, onClose }) => {
     }
   };
 
+  //get rid NFT
   const handleNFTLiquidate = async () => {
     setLoading(true);
-    if (!wallet.connected || !selectedToken) {
+    if (!wallet.connected) {
       console.log("Wallet not connected");
       toast.error("Wallet not connected or token not selected");
+      setLoading(false);
+      setTransactionError(true);
       return;
     }
-    if (nft && swapData) {
-      const result = await handleLiquidate(nft.publicKey, wallet, swapData);
-      if (!result) return;
+    if (nft) {
+      mutate(["ALL_NFTS", wallet.publicKey as PublicKey], (nfts: any) => {
+        const index = nfts.findIndex(
+          (select: any) => select.publicKey === nft.publicKey
+        );
+
+        // If the sold NFT index is not found, just return the array with the fake at the start
+        if (index === -1) return [PLACEHOLDER_NFT, ...nfts];
+
+        // Create a new array with the fake NFT at the same position
+        const newNfts = [...nfts];
+        newNfts.splice(index, 1, PLACEHOLDER_NFT);
+
+        return newNfts;
+      });
+      const result = await handleLiquidate(
+        nft.publicKey,
+        wallet,
+        !selectedToken ? null : swapData
+      );
+      mutate(["ALL_NFTS", wallet.publicKey as PublicKey]);
+      if (!result) {
+        setTransactionError(true);
+        setLoading(false);
+        return;
+      }
       setResults(result);
       setLoading(false);
       setShowMessage(true);
     }
   };
 
+  //set init price to highest pool price
   useEffect(() => {
     if (pool?.currentSellPrice)
       setPrice({
-        rate: parseFloat(pool?.currentSellPrice),
+        rate: parseFloat(pool?.currentSellPrice) / 10 ** 9,
         currency: "Sol",
       });
   }, [pool]);
 
+  //fetch price details if NFT is part of colllection (only collection NFTs can be instantly sold)
   useEffect(() => {
     if (nft.metadata.collection) {
       fetchDetails();
     }
   }, [nft]);
 
+  //update price every whatever seconds
   const priceUpdate = async () => {
     if (!pool) return;
     const swapData = await swapFunds(
@@ -123,6 +159,7 @@ const NFTDetailsModal: React.FC<NFTDetailsModalProps> = ({ nft, onClose }) => {
     setSwapData(swapData);
   };
 
+  //handle change of tokens
   const handleTokenChange = async (token: TokenInfo) => {
     {
       setSelectedToken(token);
@@ -168,6 +205,7 @@ const NFTDetailsModal: React.FC<NFTDetailsModalProps> = ({ nft, onClose }) => {
     }
   };
 
+  //switch to show warning
   const handleLiquidateClick = () => {
     setShowWarning(true);
   };
@@ -201,9 +239,40 @@ const NFTDetailsModal: React.FC<NFTDetailsModalProps> = ({ nft, onClose }) => {
                     className="mt-4 p-2 w-full bg-liquid-blue hover:bg-liquid-dark-blue text-white cursor-pointer rounded"
                     onClick={handleProceed}
                   >
-                    {loading ? <Spinner size={25}/> : "Proceed"}
+                    {loading ? <Spinner size={25} /> : "Proceed"}
                   </button>
                 </div>
+              </div>
+            ) : loading ? (
+              <div className="w-full h-full self-center flex flex-col gap-y-20 p-5 items-center">
+                <p className="text-liquid-blue w-full text-liquid-logo font-liquid-semibold mt-5 text-center">
+                  Liquidation in progress
+                </p>
+                <div className="flex flex-col gap-y-3 items-start">
+                <Spinner size={50} />
+                <p className="text-liquid-gray font-liquid-semibold mt-5">
+                  This might take a while, go touch some grass!
+                </p>
+                </div>
+              </div>
+            ) : transactionError ? (
+              <div className="w-full h-full self-center flex flex-col justify-between items-center gap-y-5 p-5">
+                <div>
+                  <p className="text-liquid-blue text-left w-full text-liquid-logo font-liquid-semibold mt-5">
+                    Unable to Liquidate
+                  </p>
+
+                  <p className="text-liquid-gray font-liquid-semibold mt-5">
+                    Unable to liquidate at this time. Please contact us if this
+                    behaviour persists.
+                  </p>
+                </div>
+                <button
+                  className="mt-4 p-2 w-full bg-liquid-blue hover:bg-liquid-dark-blue text-white cursor-pointer rounded"
+                  onClick={handleClose}
+                >
+                  Close
+                </button>
               </div>
             ) : showMessage ? (
               <div className="w-full h-full self-center flex flex-col justify-between p-5">
