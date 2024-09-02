@@ -17,7 +17,8 @@ export const handleLiquidate = async (
   mint: string,
   wallet: WalletContextState,
   swapData: any,
-  setLoading: React.Dispatch<React.SetStateAction<boolean>>
+  setLoading: React.Dispatch<React.SetStateAction<boolean>>,
+  setShowWarning: React.Dispatch<React.SetStateAction<boolean>>
 ): Promise<string[] | null> => {
   if (!wallet.signAllTransactions || !wallet.publicKey) {
     console.error("Wallet does not support signing transactions");
@@ -79,6 +80,7 @@ export const handleLiquidate = async (
     }
 
     setLoading(true);
+    setShowWarning(false);
 
     console.log("signed all transactions");
 

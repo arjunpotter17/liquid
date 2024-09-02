@@ -24,7 +24,6 @@ import { handleLiquidate } from "@/app/utils/handleLiquidate";
 import CopyToClipboard from "react-copy-to-clipboard";
 import Spinner from "../Spinner/Spinner";
 import { mutate } from "swr";
-import { PLACEHOLDER_NFT } from "@/app/constants/tokens";
 
 const NFTDetailsModal: React.FC<NFTDetailsModalProps> = ({ nft, onClose }) => {
   //hooks
@@ -48,6 +47,7 @@ const NFTDetailsModal: React.FC<NFTDetailsModalProps> = ({ nft, onClose }) => {
   const [isAnimating, setIsAnimating] = useState<boolean>(true);
   const [isVisible, setIsVisible] = useState<boolean>(false);
   const [transactionError, setTransactionError] = useState<boolean>(false);
+  const [showLoader, setShowLoader] = useState<boolean>(false);
 
   //popup mount dismount animation
   useEffect(() => {
@@ -93,10 +93,11 @@ const NFTDetailsModal: React.FC<NFTDetailsModalProps> = ({ nft, onClose }) => {
 
   //get rid NFT
   const handleNFTLiquidate = async () => {
-    setShowWarning(false);
+    setShowLoader(true);
     if (!wallet.connected) {
       console.log("Wallet not connected");
       toast.error("Wallet not connected or token not selected");
+      setShowLoader(false);
       setLoading(false);
       setTransactionError(true);
       return;
@@ -106,17 +107,21 @@ const NFTDetailsModal: React.FC<NFTDetailsModalProps> = ({ nft, onClose }) => {
         nft.publicKey,
         wallet,
         !selectedToken ? null : swapData,
-        setLoading
+        setLoading,
+        setShowWarning
       );
       mutate(["ALL_NFTS", wallet.publicKey as any as umiKey]);
       if (!result) {
         setTransactionError(true);
         setLoading(false);
+        setShowWarning(false);
+        setShowLoader(false);
         return;
       }
       setResults(result);
       setLoading(false);
       setShowMessage(true);
+      setShowLoader(false);
     }
   };
 
@@ -227,7 +232,7 @@ const NFTDetailsModal: React.FC<NFTDetailsModalProps> = ({ nft, onClose }) => {
                     className="mt-4 p-2 w-full bg-liquid-blue hover:bg-liquid-dark-blue text-white cursor-pointer rounded"
                     onClick={handleProceed}
                   >
-                    {loading ? <Spinner size={25} /> : "Proceed"}
+                    {showLoader ? <Spinner size={25} /> : "Proceed"}
                   </button>
                 </div>
               </div>
