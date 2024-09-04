@@ -1,6 +1,5 @@
 "use client";
 import { useRouter } from "next/navigation";
-import "./about.css";
 
 type Props = {};
 

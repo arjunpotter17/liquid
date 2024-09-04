@@ -110,7 +110,9 @@ const NFTDetailsModal: React.FC<NFTDetailsModalProps> = ({ nft, onClose }) => {
         setLoading,
         setShowWarning
       );
+      console.log('before mutate', result);
       mutate(["ALL_NFTS", wallet.publicKey as any as umiKey]);
+      console.log('after mutate', result);
       if (!result) {
         setTransactionError(true);
         setLoading(false);

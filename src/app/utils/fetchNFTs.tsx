@@ -19,8 +19,9 @@ export const useNFT = (ownerPublicKey: PublicKey) =>
           ownerPublicKey
         );
         const nfts = assetsByOwner.filter(
-          (token) => token?.metadata?.uri.length > 1
+          (token) => token?.metadata?.uri.length > 1 && token?.mint.decimals === 0
         );
+        console.log("NFTs:", nfts);
         const metaNfts = await Promise.all(
           nfts.map(async (nft) => {
             const metadataResponse = await axios.get(nft.metadata.uri);
@@ -34,7 +35,7 @@ export const useNFT = (ownerPublicKey: PublicKey) =>
       }
     },
     {
-      revalidateOnReconnect: false,
+      revalidateOnReconnect: true,
     }
   );
 

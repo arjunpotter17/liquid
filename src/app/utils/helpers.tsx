@@ -1,6 +1,6 @@
 import { Connection } from "@solana/web3.js";
 import { toast } from "sonner";
-import {PublicKey} from "@solana/web3.js";
+import { PublicKey } from "@solana/web3.js";
 
 // Fetcher function to use with SWR or similar data-fetching libraries
 export const fetcher = (url: string) => fetch(url).then((res) => res.json());
@@ -56,20 +56,20 @@ export const swapTransaction = async (swapData: any, publicKey: string) => {
 export const highestPricePool = async (mint: string) => {
   try {
     const nftResponse = await fetch("/api/collection-id?mint=" + mint);
-    const nftData = await nftResponse.json(); // Parse the response as JSON
+    const nftData = await nftResponse.json();
     console.log("fetching pools with collID", nftData[0]?.collId);
     const poolsResponse = await fetch(
       "/api/pools?collId=" + nftData[0]?.collId
     );
-    const poolsData = await poolsResponse.json(); // Parse the response as JSON
-    // const nonZeroPools = poolsData.filter((pool: any) => pool.balance > 0);
+    const poolsData = await poolsResponse.json();
     const tradeablePools = poolsData.filter(
-      (pool: any) => pool.takerSellCount < pool.maxTakerSellCount
-    );
-    const poolsWithBalance = tradeablePools?.filter(
       (pool: any) =>
-        pool.escrowBalance > pool.currentSellPrice ||
-        pool.marginBalance > pool.currentSellPrice
+        pool.takerSellCount < pool.maxTakerSellCount ||
+        pool.maxTakerSellCount == 0
+    );
+    
+    const poolsWithBalance = tradeablePools?.filter(
+      (pool: any) => pool.solBalance > pool.currentSellPrice
     );
     const highestPricePool = poolsWithBalance?.reduce(
       (maxPool: any, pool: any) => {
@@ -79,11 +79,10 @@ export const highestPricePool = async (mint: string) => {
       },
       null
     );
-
-    console.log("Pool with the highest currentSellPrice:", highestPricePool);
+    console.log("highestPricePool:", highestPricePool);
     if (!highestPricePool) {
       console.error("No pool with a currentSellPrice");
-      throw new Error;
+      throw new Error();
     }
     return highestPricePool;
   } catch (error) {
@@ -93,34 +92,41 @@ export const highestPricePool = async (mint: string) => {
 };
 
 export const getNftInfo = async (mint: string) => {
-  try{
+  try {
     const nftResponse = await fetch("/api/collection-id?mint=" + mint);
     return await nftResponse.json();
-  }catch(error){
+  } catch (error) {
     console.error("Error fetching NFT info:", error);
     return null;
   }
-}
+};
 
-export default function truncateWallet(str: string, num: number, middle: boolean = false, maskChar: string = ".") {
+export default function truncateWallet(
+  str: string,
+  num: number,
+  middle: boolean = false,
+  maskChar: string = "."
+) {
   if (str.length > num && str.length > 3) {
     if (!middle) {
-      return `${str.substring(0, num)}${maskChar.repeat(3)}`
+      return `${str.substring(0, num)}${maskChar.repeat(3)}`;
     }
 
-    const a = Math.round((num * 2) / 3)
-    const b = num - a
+    const a = Math.round((num * 2) / 3);
+    const b = num - a;
 
-    return `${str.substring(0, a)}${maskChar.repeat(3)}${str.substring(str.length - b, str.length)}`
+    return `${str.substring(0, a)}${maskChar.repeat(3)}${str.substring(
+      str.length - b,
+      str.length
+    )}`;
   }
 
-  return str
+  return str;
 }
-
 
 export const handleCopy = () => {
- toast.success("Copied to clipboard");
-}
+  toast.success("Copied to clipboard");
+};
 
 export async function checkWalletBalance(
   publicKey: PublicKey,
