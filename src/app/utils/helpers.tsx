@@ -62,18 +62,9 @@ export const highestPricePool = async (mint: string) => {
       "/api/pools?collId=" + nftData[0]?.collId
     );
     const poolsData = await poolsResponse.json();
-    const tradeablePools = poolsData.filter(
-      (pool: any) =>
-        pool.takerSellCount < pool.maxTakerSellCount ||
-        pool.maxTakerSellCount == 0
-    );
-    
-    const poolsWithBalance = tradeablePools?.filter(
-      (pool: any) => pool.solBalance > pool.currentSellPrice
-    );
-    const highestPricePool = poolsWithBalance?.reduce(
+    const highestPricePool = poolsData?.reduce(
       (maxPool: any, pool: any) => {
-        return pool.currentSellPrice > (maxPool?.currentSellPrice || 0)
+        return pool.sellNowPrice > (maxPool?.sellNowPrice || 0)
           ? pool
           : maxPool;
       },
