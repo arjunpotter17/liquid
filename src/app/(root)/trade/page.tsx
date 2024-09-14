@@ -7,6 +7,7 @@ import { motion } from "framer-motion";
 import NFTDetailsModal from "../../components/DetailsModal/details";
 import { Tooltip } from "react-tooltip";
 import "react-tooltip/dist/react-tooltip.css";
+import Image from "next/image";
 
 const Trade: React.FC = () => {
   // States
@@ -48,7 +49,19 @@ const Trade: React.FC = () => {
       </p>
     </div>
   ) : wallet.connected && nfts.length === 0 && !isLoading ? (
-    <div className="flex justify-center min-h-screen items-center p-6 pt-[74px]">
+    <div className="flex flex-col justify-center min-h-screen items-center p-6 gap-y-4 pt-[74px] px-4 liquid-md:px-10">
+      
+        <button
+          className="text-liquid-gray bg-liquid-dark-blue hover:text-liquid-white hover:bg-liquid-blue font-liquid-bold rounded-[50%] border border-liquid-gray w-5 text-sm"
+          data-tooltip-id="infoTooltip"
+          data-tooltip-content="Liquid v0 uses the Metaplex UMI standard to fetch tokens and token details. This does not support cNFTs. If you do not see an NFT that you own, it is most likely that your token is not present in the Metaplex registry or is a cNFT. If you feel this is wrong, please contact us."
+        >
+          i
+        </button>
+
+        {/* Tooltip */}
+        <Tooltip id="infoTooltip" place="top" className="max-w-72" />
+    
       <p className="flex justify-center items-center w-full h-full text-liquid-gray font-liquid-semibold">
         What a noob. Go buy some NFTs
       </p>
@@ -77,9 +90,9 @@ const Trade: React.FC = () => {
           <div className="flex justify-between w-full items-center">
             <p className="text-liquid-blue mb-5 text-liquid-title">Inventory</p>
             <button
-              className="text-liquid-gray hover:text-liquid-white hover:bg-liquid-blue font-liquid-bold rounded-[50%] border border-liquid-gray w-5 text-sm"
+              className="text-liquid-gray bg-liquid-dark-blue hover:text-liquid-white hover:bg-liquid-blue font-liquid-bold rounded-[50%] border border-liquid-gray w-5 text-sm"
               data-tooltip-id="infoTooltip"
-              data-tooltip-content="Liquid v0 uses the Metaplex UMI standard to fetch tokens and token details. If you do not see an NFT that you own, it is most likely that your token is not present in the Metaplex registry. If you feel this is wrong, please contact us."
+              data-tooltip-content="Liquid v0 uses the Metaplex UMI standard to fetch tokens and token details. This does not support cNFTs. If you do not see an NFT that you own, it is most likely that your token is not present in the Metaplex registry or is a cNFT. If you feel this is wrong, please contact us."
             >
               i
             </button>
