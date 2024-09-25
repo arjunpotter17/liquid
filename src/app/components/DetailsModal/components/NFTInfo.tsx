@@ -149,9 +149,9 @@ const NFTDetailsView: React.FC<NFTDetailsViewProps> = ({
       </div>
       <p className="mb-4 text-liquid-blue">
         <span className="text-liquid-gray">Mint:</span>{" "}
-        <CopyToClipboard text={nft.mint.publicKey} onCopy={handleCopy}>
+        <CopyToClipboard text={nft.id} onCopy={handleCopy}>
           <span className="cursor-pointer hover:underline">
-            {truncateWallet(nft.mint.publicKey, 10, true)}
+            {truncateWallet(nft.id, 10, true)}
           </span>
         </CopyToClipboard>
       </p>

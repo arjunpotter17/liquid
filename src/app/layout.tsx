@@ -5,6 +5,9 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
+  icons: {
+    icon: '/world.svg',
+  },
   title: "Liquid",
   description: "Liquid is a Solana-based decentralized application to instantly liquidate NFTs to any spl token.",
 };

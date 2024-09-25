@@ -72,13 +72,11 @@ export const highestPricePool = async (mint: string) => {
     );
     console.log("highestPricePool:", highestPricePool);
     if (!highestPricePool) {
-      console.error("No pool with a currentSellPrice");
-      throw new Error();
+      throw new Error("No pool with a currentSellPrice");
     }
     return highestPricePool;
   } catch (error) {
-    console.error("Error fetching highest price pool:", error);
-    throw new Error("Error fetching highest price pool");
+    throw new Error(`Error fetching highest price pool: ${error}`);
   }
 };
 

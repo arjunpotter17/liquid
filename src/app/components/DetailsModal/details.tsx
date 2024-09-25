@@ -70,9 +70,9 @@ const NFTDetailsModal: React.FC<NFTDetailsModalProps> = ({ nft, onClose }) => {
   const fetchDetails = async () => {
     try {
       setLoadingPrice(true);
-      const fetchedPriceDetails = await getNftInfo(nft.mint.publicKey);
+      const fetchedPriceDetails = await getNftInfo(nft.id);
       setPriceDetails(fetchedPriceDetails);
-      const fetchedPool = await highestPricePool(nft.mint.publicKey);
+      const fetchedPool = await highestPricePool(nft.id);
       setPrice({
         rate: parseFloat(fetchedPriceDetails?.lastSale?.price),
         currency: "Sol",
@@ -104,7 +104,7 @@ const NFTDetailsModal: React.FC<NFTDetailsModalProps> = ({ nft, onClose }) => {
     }
     if (nft) {
       const result = await handleLiquidate(
-        nft.publicKey,
+        nft.id,
         wallet,
         !selectedToken ? null : swapData,
         setLoading,
@@ -138,7 +138,7 @@ const NFTDetailsModal: React.FC<NFTDetailsModalProps> = ({ nft, onClose }) => {
 
   //fetch price details if NFT is part of colllection (only collection NFTs can be instantly sold)
   useEffect(() => {
-    if (nft.metadata.collection) {
+    if (nft) {
       fetchDetails();
     }
   }, [nft]);

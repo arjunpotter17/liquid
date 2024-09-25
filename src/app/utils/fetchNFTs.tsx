@@ -14,17 +14,34 @@ export const useNFT = (ownerPublicKey: PublicKey) =>
       const umi = createUmi(getEndpoint("mainnet")).use(mplCore());
 
       try {
-        const assetsByOwner = await fetchAllDigitalAssetByOwner(
-          umi,
-          ownerPublicKey
-        );
-        const nfts = assetsByOwner.filter(
-          (token) => token?.metadata?.uri.length > 1 && token?.mint.decimals === 0
-        );
-        console.log("NFTs:", nfts);
+        // const assetsByOwner = await fetchAllDigitalAssetByOwner(
+        //   umi,
+        //   ownerPublicKey
+        // );
+
+        
+        // console.log("Assets by owner:", assetsByOwner);
+        // const nfts = assetsByOwner.filter(
+        //   (token) => token?.metadata?.uri.length > 1 && token?.mint.decimals === 0
+        // );
+
+        let NFTs
+        try {
+          const response = await fetch(`/api/cNFT?publicKey=${ownerPublicKey}`);
+          if (!response.ok) {
+            throw new Error("Failed to fetch cNFTs");
+          }
+          const data = await response.json();
+          console.log("cNFTs are here!:", data.result.items);
+          NFTs = data.result.items;
+        } catch (error) {
+          console.error("Error fetching cNFTs:", error);
+          return null;
+        }
+        
         const metaNfts = await Promise.all(
-          nfts.map(async (nft) => {
-            const metadataResponse = await axios.get(nft.metadata.uri);
+          NFTs.map(async (nft:any) => {
+            const metadataResponse = await axios.get(nft.content.json_uri);
             return { ...nft, metadataDetails: metadataResponse.data };
           })
         );
