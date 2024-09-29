@@ -10,7 +10,9 @@ export const useNFT = (ownerPublicKey: PublicKey) =>
         let NFTs;
         try {
           const response = await fetch(`/api/cNFT?publicKey=${ownerPublicKey}`);
+          console.log(response)
           if (!response.ok) {
+            
             throw new Error("Failed to fetch cNFTs");
           }
           const data = await response.json();
