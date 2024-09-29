@@ -6,6 +6,10 @@ const nextConfig = {
             protocol: 'https',
             hostname: 'arweave.net',
           },
+          {
+            protocol: 'https',
+            hostname: 'elementerra-mainnet.s3.us-east-1.amazonaws.com',
+          }
         ],
       },
 };

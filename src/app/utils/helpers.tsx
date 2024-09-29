@@ -1,34 +1,15 @@
-import { Connection } from "@solana/web3.js";
 import { toast } from "sonner";
 import { PublicKey } from "@solana/web3.js";
 
-// Fetcher function to use with SWR or similar data-fetching libraries
+// Fetcher function to use with SWR
 export const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
-// Function to get Solana connection using the environment variable
-export const getConnection = () => {
-  const apiKey = process.env.NEXT_PUBLIC_HELIUS_RPC_KEY; // Make sure to use the correct environment variable
-  // Create a new Solana connection with the provided API key
-  return new Connection(`https://mainnet.helius-rpc.com/?api-key=${apiKey}`);
-};
-
-// Function to get the RPC endpoint for the specified network
-export const getEndpoint = (network: string) => {
-  const apiKey = process.env.NEXT_PUBLIC_HELIUS_RPC_KEY; // Make sure to use the correct environment variable
-  switch (network) {
-    case "mainnet":
-      return `https://mainnet.helius-rpc.com/?api-key=${apiKey}`;
-    case "devnet":
-      return `https://devnet.helius-rpc.com/?api-key=${apiKey}`;
-    default:
-      return `https://mainnet.helius-rpc.com/?api-key=${apiKey}`;
-  }
-};
-
+//function to buy time
 export const sleep = (ms: number) => {
   return new Promise((resolve) => setTimeout(resolve, ms));
 };
 
+//function to get the swap transaction from jupiter
 export const swapTransaction = async (swapData: any, publicKey: string) => {
   const swapResponse = await fetch("/api/swap-inst-tx", {
     method: "POST",
@@ -53,6 +34,7 @@ export const swapTransaction = async (swapData: any, publicKey: string) => {
   return swapTransactionBuf;
 };
 
+//function to get the pool with highest price for the NFT
 export const highestPricePool = async (mint: string) => {
   try {
     const nftResponse = await fetch("/api/collection-id?mint=" + mint);
@@ -62,24 +44,22 @@ export const highestPricePool = async (mint: string) => {
       "/api/pools?collId=" + nftData[0]?.collId
     );
     const poolsData = await poolsResponse.json();
-    const highestPricePool = poolsData?.reduce(
-      (maxPool: any, pool: any) => {
-        return pool.sellNowPrice > (maxPool?.sellNowPrice || 0)
-          ? pool
-          : maxPool;
-      },
-      null
-    );
+    console.log("poolsData:", poolsData);
+    const highestPricePool = poolsData?.reduce((maxPool: any, pool: any) => {
+      return pool.sellNowPrice > (maxPool?.sellNowPrice || 0) ? pool : maxPool;
+    }, null);
     console.log("highestPricePool:", highestPricePool);
     if (!highestPricePool) {
-      throw new Error("No pool with a currentSellPrice");
+      // throw new Error("No pool with a currentSellPrice");
+      return { highestPricePool: null, nftData };
     }
-    return highestPricePool;
+    return { highestPricePool, nftData };
   } catch (error) {
     throw new Error(`Error fetching highest price pool: ${error}`);
   }
 };
 
+//function to get the NFT info
 export const getNftInfo = async (mint: string) => {
   try {
     const nftResponse = await fetch("/api/collection-id?mint=" + mint);
@@ -90,6 +70,7 @@ export const getNftInfo = async (mint: string) => {
   }
 };
 
+//truncate addresses
 export default function truncateWallet(
   str: string,
   num: number,
@@ -113,22 +94,25 @@ export default function truncateWallet(
   return str;
 }
 
+//onclick handler to copy to clipboard
 export const handleCopy = () => {
   toast.success("Copied to clipboard");
 };
 
+//function to check wallet balance
 export async function checkWalletBalance(
   publicKey: PublicKey,
   amount: number
 ): Promise<boolean> {
   const maxRetries = 3;
-  const interval = 5000; // 5 seconds in milliseconds
-  const connection = getConnection();
+  const interval = 5000; // check every 5 seconds to see if funds have hit the wallet
+  // const connection = getConnection();
   return new Promise(async (resolve) => {
     for (let attempt = 0; attempt < maxRetries; attempt++) {
       try {
-        const balance = await connection.getBalance(publicKey);
-
+        const balance = await fetch(
+          "/api/helius/accounts?publicKey=" + publicKey.toString()
+        ).then((res) => res.json());
         // Check if the balance is greater than or equal to the specified amount
         if (balance >= amount) {
           resolve(true);

@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const publicKey = searchParams.get("publicKey");
-    const HELIUS_API_KEY = process.env.NEXT_PUBLIC_HELIUS_RPC_KEY;
+    const HELIUS_API_KEY = process.env.HELIUS_RPC_KEY;
     if (!publicKey) {
         return NextResponse.json({ error: "Public key is required" }, { status: 400 });
     }

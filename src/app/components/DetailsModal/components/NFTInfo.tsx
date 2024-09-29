@@ -38,9 +38,9 @@ const NFTDetailsView: React.FC<NFTDetailsViewProps> = ({
   setShowTokenSearch,
   priceLoading,
   setPriceLoading,
-  fetchNewPrice, // Receive this prop
+  fetchNewPrice,
 }) => {
-  const properties = nft.metadataDetails?.attributes || [];
+  const properties = nft.content?.metadata?.attributes || [];
   const [isDropdownOpen, setDropdownOpen] = useState(false); // State for dropdown open/close
   const [countdown, setCountdown] = useState(15); // Timer countdown state
 
@@ -75,13 +75,14 @@ const NFTDetailsView: React.FC<NFTDetailsViewProps> = ({
       </button>
       <div className="flex justify-start gap-x-3">
         <img
-          src={nft.metadataDetails?.image}
-          alt={nft.metadataDetails?.name}
-          className="w-24 h-24 object-cover rounded mb-4"
+          src={nft.content?.links?.image}
+          alt={nft.content?.metadata?.name}
+          className="object-cover w-24 h-24 rounded mb-4"
         />
+
         <div className="flex flex-col items-start justify-end overflow-x-auto text-nowrap scrollbar-none">
           <h2 className="text-liquid-title font-liquid-bold text-liquid-blue mb-2">
-            {nft.metadataDetails?.name}
+            {nft.content?.metadata?.name}
           </h2>
         </div>
       </div>
@@ -110,8 +111,7 @@ const NFTDetailsView: React.FC<NFTDetailsViewProps> = ({
       ) : (
         <div className="text-liquid-blue flex">
           <span className="mb-2 text-liquid-gray">Last Sale Price:</span>{" "}
-          
-          <PriceSkeleton/>
+          <PriceSkeleton />
         </div>
       )}
 
@@ -127,6 +127,7 @@ const NFTDetailsView: React.FC<NFTDetailsViewProps> = ({
                   <img
                     src={price.logo}
                     alt="price.currency"
+                    loading="eager"
                     className="w-5 h-5"
                   />
                 ) : (
@@ -188,8 +189,8 @@ const NFTDetailsView: React.FC<NFTDetailsViewProps> = ({
           {selectedToken?.symbol || "Select a token"}
           <span className="ml-2">&#9662;</span>
         </button>
-        {isDropdownOpen && price?.rate !== 0 && (
-          <ul className="absolute w-full bg-liquid-black border border-liquid-blue rounded mt-1 z-10">
+        {isDropdownOpen && price?.rate !== 0 && !priceLoading && (
+          <ul className="absolute w-full bg-liquid-black border border-liquid-blue rounded mt-1">
             {stables.map((token) => (
               <li
                 key={token.address}
@@ -224,7 +225,7 @@ const NFTDetailsView: React.FC<NFTDetailsViewProps> = ({
       </div>
 
       <button
-        disabled={price?.rate === 0}
+        disabled={price?.rate === 0 || priceLoading}
         className="mt-4 p-2 w-full bg-liquid-blue hover:bg-liquid-dark-blue text-liquid-black cursor-pointer rounded disabled:bg-liquid-gray disabled:cursor-not-allowed"
         onClick={onLiquidate}
       >

@@ -1,13 +1,11 @@
+import { highestPricePool } from "./helpers";
 import { Connection } from "@solana/web3.js";
-import { getConnection, highestPricePool } from "./helpers";
-
-export const liquidate = async (mint: string) => {
-  const connection = getConnection();
+export const liquidate = async (mint: string, connection:Connection) => {
   console.log("fetching collID for mint", mint);
   const nftResponse = await fetch("/api/collection-id?mint=" + mint);
   const nftData = await nftResponse.json(); // Parse the response as JSON
 
-  const highestPool = await highestPricePool(mint);
+  const {highestPricePool:highestPool} = await highestPricePool(mint);
 
   console.log("Pool with the highest currentSellPrice:", highestPool);
   if (!highestPool) {

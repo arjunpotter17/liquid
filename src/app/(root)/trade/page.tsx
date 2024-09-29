@@ -4,10 +4,13 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import { PublicKey as umiKey } from "@metaplex-foundation/umi";
 import { useNFT } from "@/app/utils/fetchNFTs";
 import { motion } from "framer-motion";
-import NFTDetailsModal from "../../components/DetailsModal/details";
 import { Tooltip } from "react-tooltip";
 import "react-tooltip/dist/react-tooltip.css";
-import Image from "next/image";
+// import NFTDetailsModal from "../../components/DetailsModal/details";
+import dynamic from "next/dynamic";
+
+const NFTDetailsModal = dynamic(() => import("../../components/DetailsModal/details"), { ssr: false });
+
 
 const Trade: React.FC = () => {
   // States
@@ -50,18 +53,17 @@ const Trade: React.FC = () => {
     </div>
   ) : wallet.connected && nfts.length === 0 && !isLoading ? (
     <div className="flex flex-col justify-center min-h-screen items-center p-6 gap-y-4 pt-[74px] px-4 liquid-md:px-10">
-      
-        <button
-          className="text-liquid-gray bg-liquid-dark-blue hover:text-liquid-white hover:bg-liquid-blue font-liquid-bold rounded-[50%] border border-liquid-gray w-5 text-sm"
-          data-tooltip-id="infoTooltip"
-          data-tooltip-content="Liquid v0 uses the Metaplex UMI standard to fetch tokens and token details. This does not support cNFTs. If you do not see an NFT that you own, it is most likely that your token is not present in the Metaplex registry or is a cNFT. If you feel this is wrong, please contact us."
-        >
-          i
-        </button>
+      <button
+        className="text-liquid-gray bg-liquid-dark-blue hover:text-liquid-white hover:bg-liquid-blue font-liquid-bold rounded-[50%] border border-liquid-gray w-5 text-sm animate-glow"
+        data-tooltip-id="infoTooltip"
+        data-tooltip-content="Liquid uses the Helius API to fetch NFTs owned by users. If you do not see an NFT that you own, please contact us."
+      >
+        i
+      </button>
 
-        {/* Tooltip */}
-        <Tooltip id="infoTooltip" place="top" className="max-w-72" />
-    
+      {/* Tooltip */}
+      <Tooltip id="infoTooltip" place="top" className="max-w-72" />
+
       <p className="flex justify-center items-center w-full h-full text-liquid-gray font-liquid-semibold">
         What a noob. Go buy some NFTs
       </p>
@@ -92,7 +94,7 @@ const Trade: React.FC = () => {
             <button
               className="text-liquid-gray bg-liquid-dark-blue hover:text-liquid-white hover:bg-liquid-blue font-liquid-bold rounded-[50%] border border-liquid-gray w-5 text-sm"
               data-tooltip-id="infoTooltip"
-              data-tooltip-content="Liquid v0 uses the Metaplex UMI standard to fetch tokens and token details. This does not support cNFTs. If you do not see an NFT that you own, it is most likely that your token is not present in the Metaplex registry or is a cNFT. If you feel this is wrong, please contact us."
+              data-tooltip-content="Liquid uses the Helius API to fetch NFTs owned by users. If you do not see an NFT that you own, please contact us."
             >
               i
             </button>
@@ -102,24 +104,27 @@ const Trade: React.FC = () => {
           </div>
 
           <div className="w-full h-full flex flex-col items-center liquid-md:flex-row liquid-md:justify-start liquid-md:items-start gap-4">
-            {nfts?.map((nft: any) => (
+            {nfts?.map((nft: any, index: number) => (
               <motion.div
-                key={nft.publicKey}
+                key={nft?.id || index}
                 className="bg-liquid-card-gray-bg text-white mb-4 w-[325px] h-[260px] cursor-pointer pb-6 hover:shadow-cardHover rounded-t-lg"
                 variants={cardVariants}
                 whileHover={{ scale: 1.03 }}
                 transition={{ duration: 0.2 }}
-                onClick={() => setSelectedNFT(nft)}
+                onClick={() => {
+                  setSelectedNFT(nft)
+                } }
               >
                 <img
-                  src={nft.metadataDetails?.image}
-                  alt={nft.metadataDetails?.name}
-                  className="w-full h-48 object-cover rounded-t-lg"
+                  src={nft.content?.links?.image}
+                  alt={nft.content?.metadata?.name}
+                  loading="eager"
+                  className="w-full object-cover h-48 rounded-t-lg"
                 />
 
                 <div className="w-full px-3">
                   <p className="text-liquid-title mt-4 overflow-x-auto scrollbar-none w-full text-nowrap">
-                    {nft.metadataDetails?.name}
+                    {nft.content?.metadata?.name}
                   </p>
                 </div>
               </motion.div>

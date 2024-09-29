@@ -1,59 +1,33 @@
-import { fetchAllDigitalAssetByOwner } from "@metaplex-foundation/mpl-token-metadata";
-import { createUmi } from "@metaplex-foundation/umi-bundle-defaults";
-import { mplCore } from "@metaplex-foundation/mpl-core";
 import { PublicKey } from "@metaplex-foundation/umi";
-import axios from "axios";
-import { getEndpoint } from "./helpers";
 import useSWR from "swr";
 
-
+//fetch NFTs owned by a user
 export const useNFT = (ownerPublicKey: PublicKey) =>
   useSWR(
-    ["ALL_NFTS", ownerPublicKey], // Use a key array to include ownerPublicKey
+    ["ALL_NFTS", ownerPublicKey],
     async ([, ownerPublicKey]: [string, PublicKey]) => {
-      const umi = createUmi(getEndpoint("mainnet")).use(mplCore());
-
       try {
-        // const assetsByOwner = await fetchAllDigitalAssetByOwner(
-        //   umi,
-        //   ownerPublicKey
-        // );
-
-        
-        // console.log("Assets by owner:", assetsByOwner);
-        // const nfts = assetsByOwner.filter(
-        //   (token) => token?.metadata?.uri.length > 1 && token?.mint.decimals === 0
-        // );
-
-        let NFTs
+        let NFTs;
         try {
           const response = await fetch(`/api/cNFT?publicKey=${ownerPublicKey}`);
           if (!response.ok) {
             throw new Error("Failed to fetch cNFTs");
           }
           const data = await response.json();
-          console.log("cNFTs are here!:", data.result.items);
-          NFTs = data.result.items;
+          NFTs = data?.result?.items;
+          return NFTs;
         } catch (error) {
           console.error("Error fetching cNFTs:", error);
           return null;
         }
-        
-        const metaNfts = await Promise.all(
-          NFTs.map(async (nft:any) => {
-            const metadataResponse = await axios.get(nft.content.json_uri);
-            return { ...nft, metadataDetails: metadataResponse.data };
-          })
-        );
-        return metaNfts;
       } catch (error) {
         console.error("Error fetching NFTs:", error);
         return [];
       }
     },
     {
+      revalidateOnFocus: false, // Disable revalidation on focus
+      revalidateIfStale: false, // Disable revalidation if data is stale
       revalidateOnReconnect: true,
     }
   );
-
-

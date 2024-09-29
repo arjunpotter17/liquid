@@ -1,10 +1,5 @@
-import React, { useEffect, useState } from "react";
-import NFTDetailsView from "./components/NFTInfo";
-import TokenSearchView from "./components/TokenSelect";
-import WarningComponent from "./components/warningScreen"; // Import WarningComponent
+import React, { useEffect, useRef, useState } from "react";
 import {
-  getConnection,
-  getNftInfo,
   handleCopy,
   highestPricePool,
 } from "@/app/utils/helpers";
@@ -16,19 +11,26 @@ import {
   TokenInfo,
 } from "@/app/interfaces";
 import { swapFunds } from "@/app/utils/swapFunds";
-import { PublicKey, ParsedAccountData } from "@solana/web3.js";
+import { ParsedAccountData } from "@solana/web3.js";
 import { PublicKey as umiKey } from "@metaplex-foundation/umi";
-import { useWallet } from "@solana/wallet-adapter-react";
+import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { toast } from "sonner";
 import { handleLiquidate } from "@/app/utils/handleLiquidate";
 import CopyToClipboard from "react-copy-to-clipboard";
-import Spinner from "../Spinner/Spinner";
 import { mutate } from "swr";
+import dynamic from "next/dynamic";
+
+const Spinner = dynamic(() => import("../Spinner/Spinner"), {ssr:true});
+const WarningComponent = dynamic(() => import("./components/warningScreen"), {ssr:true});
+const NFTDetailsView = dynamic(() => import("./components/NFTInfo"), {ssr:true});
+const TokenSearchView = dynamic(() => import("./components/TokenSelect"), {ssr:true});
+
 
 const NFTDetailsModal: React.FC<NFTDetailsModalProps> = ({ nft, onClose }) => {
   //hooks
-  const connection = getConnection();
   const wallet = useWallet();
+  const hasFetched = useRef(false);
+  const {connection} = useConnection();
 
   //states
   const [selectedToken, setSelectedToken] = useState<TokenInfo | null>(null);
@@ -59,6 +61,7 @@ const NFTDetailsModal: React.FC<NFTDetailsModalProps> = ({ nft, onClose }) => {
   }, []);
 
   const handleClose = () => {
+    mutate(["ALL_NFTS", wallet.publicKey as any as umiKey]);
     setIsVisible(false);
     setTimeout(() => {
       setIsAnimating(false);
@@ -67,22 +70,24 @@ const NFTDetailsModal: React.FC<NFTDetailsModalProps> = ({ nft, onClose }) => {
   };
 
   //fetch NFT details
-  const fetchDetails = async () => {
+  const fetchPoolsForNFT = async () => {
     try {
       setLoadingPrice(true);
-      const fetchedPriceDetails = await getNftInfo(nft.id);
+      const { highestPricePool: fetchedPool, nftData: fetchedPriceDetails } =
+        await highestPricePool(nft.id);
       setPriceDetails(fetchedPriceDetails);
-      const fetchedPool = await highestPricePool(nft.id);
       setPrice({
         rate: parseFloat(fetchedPriceDetails?.lastSale?.price),
         currency: "Sol",
       });
-
+      if (!fetchedPool) {
+        throw new Error("No pool with a currentSellPrice");
+      }
       setPool(fetchedPool);
       setLoadingPrice(false);
     } catch (error) {
       console.error("Error fetching NFT details:", error);
-      toast.error("NFT does not have a pool");
+      toast.error(`${nft.compression.compressed ? "Tensor does not provide pools for cNFTs. Bid feature coming soon!" : "NFT does not have a pool. Make sure your NFT is part of a collection. NFTs outside of a collection cannot be instantly liquidated."}`);
       setPrice({
         rate: 0,
         currency: "Sol",
@@ -103,27 +108,33 @@ const NFTDetailsModal: React.FC<NFTDetailsModalProps> = ({ nft, onClose }) => {
       return;
     }
     if (nft) {
+      const liquidationToast = toast.loading("Liquidating NFT");
+
       const result = await handleLiquidate(
         nft.id,
         wallet,
         !selectedToken ? null : swapData,
         setLoading,
-        setShowWarning
+        setShowWarning, 
+        connection
       );
-      console.log('before mutate', result);
-      mutate(["ALL_NFTS", wallet.publicKey as any as umiKey]);
-      console.log('after mutate', result);
-      if (!result) {
+
+      toast.dismiss(liquidationToast);
+
+      if(result instanceof Error){
         setTransactionError(true);
-        setLoading(false);
-        setShowWarning(false);
-        setShowLoader(false);
+          setLoading(false);
+          setShowWarning(false);
+          setShowLoader(false);
+        toast.error(result.message);
         return;
+      } else{
+        setResults(result as string[]);
+        setLoading(false);
+        setShowMessage(true);
+        setShowLoader(false);
+        toast.success("NFT liquidated successfully.");
       }
-      setResults(result);
-      setLoading(false);
-      setShowMessage(true);
-      setShowLoader(false);
     }
   };
 
@@ -136,12 +147,13 @@ const NFTDetailsModal: React.FC<NFTDetailsModalProps> = ({ nft, onClose }) => {
       });
   }, [pool]);
 
-  //fetch price details if NFT is part of colllection (only collection NFTs can be instantly sold)
+  //fetch details when component mounts
   useEffect(() => {
-    if (nft) {
-      fetchDetails();
+    if (!hasFetched.current) {
+      fetchPoolsForNFT();
+      hasFetched.current = true;
     }
-  }, [nft]);
+  }, []);
 
   //update price every whatever seconds
   const priceUpdate = async () => {
@@ -157,6 +169,7 @@ const NFTDetailsModal: React.FC<NFTDetailsModalProps> = ({ nft, onClose }) => {
   //handle change of tokens
   const handleTokenChange = async (token: TokenInfo) => {
     {
+      console.log("Token selected:", token);
       setSelectedToken(token);
       setShowTokenSearch(false);
       if (token.address !== "So11111111111111111111111111111111111111112") {
@@ -169,10 +182,9 @@ const NFTDetailsModal: React.FC<NFTDetailsModalProps> = ({ nft, onClose }) => {
         );
         setSwapData(swapData);
         try {
-          const mintInfo = await connection.getParsedAccountInfo(
-            new PublicKey(token.address)
-          );
-
+          const { mintInfo } = await fetch(
+            "/api/helius/accountInfo?address=" + token.address.toString()
+          ).then((res) => res.json());
           if (mintInfo.value && "parsed" in mintInfo.value.data) {
             const parsedData = mintInfo.value.data as ParsedAccountData;
             const decimals = parsedData.parsed.info.decimals;
@@ -205,10 +217,6 @@ const NFTDetailsModal: React.FC<NFTDetailsModalProps> = ({ nft, onClose }) => {
     setShowWarning(true);
   };
 
-  const handleProceed = () => {
-    handleNFTLiquidate();
-  };
-
   return (
     <>
       {isAnimating && (
@@ -219,24 +227,9 @@ const NFTDetailsModal: React.FC<NFTDetailsModalProps> = ({ nft, onClose }) => {
         >
           <div className="relative bg-liquid-card-gray-bg px-6 pt-6 pb-3 rounded-lg max-w-lg w-full mx-4 liquid-md:mx-0 h-[500px] overflow-y-auto scrollbar-thin scrollbar-track-liquid-black scrollbar-thumb-liquid-dark-blue">
             {showWarning ? (
-              <div className="w-full h-full self-center flex flex-col justify-between">
-                <WarningComponent />
-                <div className="flex w-full gap-x-2">
-                  <button
-                    disabled={loading}
-                    className="mt-4 p-2 w-full bg-liquid-blue hover:bg-liquid-dark-blue text-white cursor-pointer rounded"
-                    onClick={() => setShowWarning(false)}
-                  >
-                    Back
-                  </button>
-                  <button
-                    disabled={loading}
-                    className="mt-4 p-2 w-full bg-liquid-blue hover:bg-liquid-dark-blue text-white cursor-pointer rounded"
-                    onClick={handleProceed}
-                  >
-                    {showLoader ? <Spinner size={25} /> : "Proceed"}
-                  </button>
-                </div>
+              <div className="w-full">
+                <WarningComponent loading={loading} setShowWarning={setShowWarning} handleNFTLiquidate={handleNFTLiquidate} showLoader={showLoader}/>
+                
               </div>
             ) : loading ? (
               <div className="w-full h-full self-center flex flex-col gap-y-20 p-5 items-center">
@@ -244,10 +237,10 @@ const NFTDetailsModal: React.FC<NFTDetailsModalProps> = ({ nft, onClose }) => {
                   Liquidation in progress
                 </p>
                 <div className="flex flex-col gap-y-3 items-start">
-                <Spinner size={50} />
-                <p className="text-liquid-gray font-liquid-semibold mt-5">
-                  This might take a while, go touch some grass!
-                </p>
+                  <Spinner size={50} />
+                  <p className="text-liquid-gray font-liquid-semibold mt-5">
+                    This might take a while, go touch some grass!
+                  </p>
                 </div>
               </div>
             ) : transactionError ? (
